@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blob — playground</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#131c2b;color:#eef4ff;font:14px system-ui,sans-serif}#view{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}header{position:absolute;top:24px;left:28px;right:28px;display:flex;align-items:start;justify-content:space-between;gap:20px;pointer-events:none}h1{font-size:22px;margin:0 0 6px}p{margin:0;color:#b7c9df;line-height:1.6}nav{display:flex;gap:12px;pointer-events:auto}a,button{font:inherit;color:#e6f2ff;background:#25374b;border:1px solid #56728d;border-radius:8px;padding:9px 14px;text-decoration:none;cursor:pointer}footer{position:absolute;bottom:24px;left:28px;right:28px;display:flex;justify-content:space-between;gap:12px;color:#b7c9df}kbd{color:white}#status{color:#9edacb}@media(max-width:650px){header{top:16px;left:16px;right:16px}nav{flex-direction:column;gap:6px}footer{left:16px;right:16px;font-size:12px}h1{font-size:18px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="view" aria-label="Side-on 3D playground"></div>
+<header><div><h1>Blob / Playground 01</h1><p>A little room to find his feet.</p></div><nav><button id="reset">Reset playground</button><a href="/">Character viewer</a></nav></header>
+<footer><span><kbd>← →</kbd> or <kbd>A D</kbd> · Move & turn</span><span id="status" role="status">Loading Blob…</span></footer>
+<script type="module" src="/src/playground.js"></script>
+</body></html>

@@ -13,6 +13,16 @@ npm run dev
 
 Open the local URL printed by Vite (normally `http://localhost:5173/`). Drag to orbit the camera; scroll to zoom. Controls are on the right. An alternative requiring no Node tooling is `python3 -m http.server 8000`, then open `http://localhost:8000/`, although this version loads three.js from a CDN and thus requires internet.
 
+## Experimental playground
+
+Open `http://localhost:5173/playground.html` after starting Vite, or follow **Open keyboard playground** in the character viewer. Use **Left/Right arrows** or **A/D** to move. Reversing direction makes Blob pivot through 180° in 0.18 seconds before walking again. Releasing the keys settles him into a grounded stand; eyes stay active. Reset playground restores the starting position and camera. Losing focus clears held keys.
+
+The flat test lane has solid end limits and a following side-on camera. Background structures are scenery. Gameplay uses X horizontally and Y vertically, with Z depth locked; a parent transform adapts the approved Z-up character without changing the GLB. Jumping and platform collisions are future work. The original viewer and all its animation controls remain at `/`.
+
+- `src/PlayerMotion.js` — movement limits and timed direction changes
+- `src/PlaygroundCharacter.js` — approved gait/eyes adapted to a movable character root
+- `src/playground.js` — test level, keyboard input, lighting and follow camera
+
 ## Code layout
 
 - `index.html` — user interface and sliders (all user-approved defaults are set here)
