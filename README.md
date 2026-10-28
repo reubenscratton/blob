@@ -32,7 +32,7 @@ Open the local URL printed by Vite (normally `http://localhost:5173/`). Drag to 
 
 ```bash
 npm run check  # JavaScript syntax checks
-npm test       # defaults, code invariants, GLB presence
+npm test       # baseline guards plus gait/eye parity against the approved archive
 ```
 
 A baseline Git commit is included. Before large experiments, create a feature branch or commit the current working state. Keep the visual behaviour of the approved reference intact unless the task requires changing it.
@@ -47,4 +47,4 @@ A baseline Git commit is included. Before large experiments, create a feature br
 
 ## Notes
 
-The three.js library and loaders are fetched from jsDelivr through the `importmap` in `index.html`. Vite is used only to host during development. Model coordinates use +Z up and −Y forward, unlike many conventional Y-up three.js projects. This is intentional.
+Vite resolves three.js and its loaders from the pinned npm dependency (0.167.1, matching the approved demo). When serving without Vite, the `importmap` in `index.html` loads that same version from jsDelivr. Model coordinates use +Z up and −Y forward, unlike many conventional Y-up three.js projects. This is intentional.

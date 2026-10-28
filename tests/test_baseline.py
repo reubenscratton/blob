@@ -24,6 +24,14 @@ class BaselineTests(unittest.TestCase):
                 self.assertIsNotNone(m, f'missing slider {key}')
                 self.assertEqual(m.group(1), value)
 
+    def test_slider_ranges_match_archive(self):
+        def sliders(path):
+            html = path.read_text()
+            return [dict(re.findall(r'(id|min|max|step|value)="([^" ]+)"', tag))
+                    for tag in re.findall(r'<input[^>]*type="range"[^>]*>', html)]
+        self.assertEqual(sliders(ROOT / 'index.html'),
+                         sliders(ROOT / 'reference/approved-standalone.html'))
+
     def test_critical_mesh_guards(self):
         character = (ROOT / 'src/BlobCharacter.js').read_text()
         self.assertIn('mesh.frustumCulled=false', character)

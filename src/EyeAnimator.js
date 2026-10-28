@@ -75,7 +75,8 @@ function animateEyes(dt){
 
   function resetEyes() {
     gazeX=gazeY=targetX=targetY=0;
-    lookHold=1.8;lookReturn=false;
+    // Preserve the archived reset: a pending glance still returns to neutral.
+    lookHold=1.8;
     blinkWait=2.2;blinkElapsed=0;blinking=false;
   }
   return {setupEyes, animateEyes, resetEyes};
