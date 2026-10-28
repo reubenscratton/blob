@@ -25,6 +25,16 @@ The flat test lane has solid end limits and a following side-on camera. The came
 - `src/LavaFloor.js` — textured cooled-lava platform and decorative rock skirt
 - `src/LavaMaterial.js` — deterministic tile variation and border blending for color and bump relief
 
+## GitHub Pages deployment
+
+- Repository: https://github.com/reubenscratton/blob
+- Playground: https://reubenscratton.github.io/blob/playground.html
+- Character viewer: https://reubenscratton.github.io/blob/
+
+Push to `master` to run the **Deploy GitHub Pages** workflow. It installs from the lockfile, runs tests and syntax checks, builds both pages with Vite, and deploys `dist/` through GitHub Actions. Pages must use **GitHub Actions** as its build source. Generated build files are ignored by Git.
+
+To check the deployed layout locally, run `npm run build` then `npm run preview`; open `/blob/playground.html` at the preview server URL. Development via `npm run dev` continues to use `/playground.html`. Model and texture URLs are bundled by Vite so they also work under the Pages `/blob/` prefix.
+
 ## Code layout
 
 - `index.html` — user interface and sliders (all user-approved defaults are set here)

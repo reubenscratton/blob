@@ -62,7 +62,7 @@ document.addEventListener('visibilitychange', () => { if(document.hidden) clearI
 document.querySelector('#reset').addEventListener('click', () => {
   clearInput(); motion.reset(); character?.reset(); cameraX=0;
 });
-new GLTFLoader().load('/assets/blob.glb', gltf => {
+new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href, gltf => {
   gltf.scene.updateMatrixWorld(true);
   character = new PlaygroundCharacter(gltf.scene, scene);
   motion.jumpHeight = 2 * character.height;

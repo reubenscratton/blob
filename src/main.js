@@ -19,7 +19,7 @@ function slider(name,fmt){const el=$(name),out=$(name+'Value');const update=()=>
 slider('speed',v=>v.toFixed(2)+'×');slider('length',v=>v.toFixed(2));slider('lift',v=>v.toFixed(2));slider('stance',v=>Math.round(100*v)+'%');slider('heel',v=>v+'°');slider('toe',v=>v+'°');slider('hip',v=>v.toFixed(2));slider('bob',v=>v.toFixed(3));slider('flop',v=>v+'°');slider('curiosity',v=>Math.round(v*100)+'%');slider('turn',v=>v+'°');
 // Load the exact last approved model; split behaviour into small modules.
 const eyesController=createEyeAnimator($,()=>playing);
-new GLTFLoader().load('./assets/blob.glb',gltf=>{
+new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href,gltf=>{
  model=gltf.scene;model.updateMatrixWorld(true);shell=new THREE.Group();scene.add(shell);
  const character=setupBlobCharacter(model,scene,shell,eyesController);
  legs=character.legs;antennas=character.antennas;

@@ -6,7 +6,7 @@ import {createLavaMaterial} from './LavaMaterial.js';
 export async function createLavaFloor(scene, renderer) {
   const loader=new THREE.TextureLoader();
   const textures=await Promise.all(['cooled-lava','cooled-lava-a','cooled-lava-b','cooled-lava-c']
-    .map(name=>loader.loadAsync(`/assets/textures/${name}.png`)));
+    .map(name=>loader.loadAsync(new URL(`../assets/textures/${name}.png`,import.meta.url).href)));
   for(const texture of textures) {
     texture.wrapS=texture.wrapT=THREE.RepeatWrapping;
     texture.colorSpace=THREE.SRGBColorSpace;
