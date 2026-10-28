@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "check": "node --check src/main.js && node --check src/BlobCharacter.js && node --check src/WalkAnimator.js && node --check src/EyeAnimator.js && node --check src/PlayerMotion.js && node --check src/PlaygroundCharacter.js && node --check src/playground.js && node --check src/LavaFloor.js",
+    "check": "node --check src/main.js && node --check src/BlobCharacter.js && node --check src/WalkAnimator.js && node --check src/EyeAnimator.js && node --check src/PlayerMotion.js && node --check src/PlaygroundCharacter.js && node --check src/playground.js && node --check src/LavaFloor.js && node --check src/LavaMaterial.js",
     "test": "python3 -m unittest discover -s tests && node --test tests/*.test.js"
   },
   "devDependencies": {
