@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Blob — Starquake character prototype</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#171c26;color:#eef0f6;font:15px system-ui,Arial,sans-serif}#app{display:grid;grid-template-columns:minmax(0,1fr) 310px;height:100vh}#view{min-width:0;position:relative}canvas{display:block}aside{padding:22px;background:#252c39;overflow:auto}h1{margin:0 0 6px;font-size:24px}p{line-height:1.5;color:#bfc9d9}label{display:flex;justify-content:space-between;gap:10px;margin-top:16px;margin-bottom:7px}input[type=range]{width:100%;accent-color:#7cc1fa}button{border:0;border-radius:8px;padding:11px 15px;background:#81baff;color:#11243e;font-weight:700;cursor:pointer;margin-top:14px}button.secondary{background:#465368;color:white}#status{font-size:12px;color:#b5d8ff;margin-top:18px;overflow-wrap:anywhere}.note{font-size:12px}#hint{position:absolute;bottom:16px;left:18px;color:#cad0dc;opacity:.85;font-size:12px}@media(max-width:720px){#app{grid-template-columns:1fr;grid-template-rows:minmax(380px,60vh) auto;height:auto}aside{padding:18px}}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"}}</script>
+</head><body><div id="app"><div id="view"><div id="hint">Drag to orbit · Scroll to zoom · Camera follows Blob</div></div><aside>
+<h1>Blob’s nervous, darting eyes</h1><p>The body advances over each planted foot while the visible hip travels through the spherical suit. A continuous, narrow ankle flex zone connects the independently rolling foot to the hip-driven upper leg. There are no cut mesh surfaces to open up.</p>
+<label for="speed">Walking speed <output id="speedValue"></output></label><input id="speed" type="range" min="0" max="2.5" step="0.05" value="2.00">
+<label for="length">Step length <output id="lengthValue"></output></label><input id="length" type="range" min="0.25" max="2.50" step="0.05" value="2.50">
+<label for="lift">Foot lift <output id="liftValue"></output></label><input id="lift" type="range" min="0" max="0.35" step="0.01" value="0.22">
+<label for="stance">Planted portion <output id="stanceValue"></output></label><input id="stance" type="range" min="0.52" max="0.75" step="0.01" value="0.62">
+<label for="heel">Heel strike <output id="heelValue"></output></label><input id="heel" type="range" min="0" max="35" step="1" value="23">
+<label for="toe">Toe-off <output id="toeValue"></output></label><input id="toe" type="range" min="0" max="40" step="1" value="28">
+<label for="hip">Hip swing accent <output id="hipValue"></output></label><input id="hip" type="range" min="0" max="0.22" step="0.01" value="0.10">
+<label for="bob">Body bounce <output id="bobValue"></output></label><input id="bob" type="range" min="0" max="0.10" step="0.005" value="0.010">
+<label for="flop">Antenna flop <output id="flopValue"></output></label><input id="flop" type="range" min="0" max="35" step="1" value="12">
+<label for="curiosity">Eye curiosity <output id="curiosityValue"></output></label><input id="curiosity" type="range" min="0" max="1" step="0.05" value="1.00">
+<label for="turn">Body glance <output id="turnValue"></output></label><input id="turn" type="range" min="0" max="12" step="1" value="12">
+<div><button id="toggle">Pause</button> <button id="reset" class="secondary">Reset walk & view</button></div>
+<p class="note">For the best view of planted feet, orbit towards either side. The model travels in the −Y direction (toward its toes). The approved default step length is 2.50. The camera tracks Blob.</p>
+<p class="note">The ankle bend still uses the continuous mesh. Eye motion is independent of the walk: Blob snaps his gaze rapidly to random points, holds it, occasionally blinks, then snaps back to neutral.</p>
+<div id="status">Loading curious Blob…</div></aside></div>
+<script type="module" src="./src/main.js"></script></body></html>

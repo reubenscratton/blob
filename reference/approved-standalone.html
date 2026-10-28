@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Blob — articulated ankles</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#171c26;color:#eef0f6;font:15px system-ui,Arial,sans-serif}#app{display:grid;grid-template-columns:minmax(0,1fr) 310px;height:100vh}#view{min-width:0;position:relative}canvas{display:block}aside{padding:22px;background:#252c39;overflow:auto}h1{margin:0 0 6px;font-size:24px}p{line-height:1.5;color:#bfc9d9}label{display:flex;justify-content:space-between;gap:10px;margin-top:16px;margin-bottom:7px}input[type=range]{width:100%;accent-color:#7cc1fa}button{border:0;border-radius:8px;padding:11px 15px;background:#81baff;color:#11243e;font-weight:700;cursor:pointer;margin-top:14px}button.secondary{background:#465368;color:white}#status{font-size:12px;color:#b5d8ff;margin-top:18px;overflow-wrap:anywhere}.note{font-size:12px}#hint{position:absolute;bottom:16px;left:18px;color:#cad0dc;opacity:.85;font-size:12px}@media(max-width:720px){#app{grid-template-columns:1fr;grid-template-rows:minmax(380px,60vh) auto;height:auto}aside{padding:18px}}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"}}</script>
+</head><body><div id="app"><div id="view"><div id="hint">Drag to orbit · Scroll to zoom · Camera follows Blob</div></div><aside>
+<h1>Blob’s nervous, darting eyes</h1><p>The body advances over each planted foot while the visible hip travels through the spherical suit. A continuous, narrow ankle flex zone connects the independently rolling foot to the hip-driven upper leg. There are no cut mesh surfaces to open up.</p>
+<label for="speed">Walking speed <output id="speedValue"></output></label><input id="speed" type="range" min="0" max="2.5" step="0.05" value="2.00">
+<label for="length">Step length <output id="lengthValue"></output></label><input id="length" type="range" min="0.25" max="2.50" step="0.05" value="2.50">
+<label for="lift">Foot lift <output id="liftValue"></output></label><input id="lift" type="range" min="0" max="0.35" step="0.01" value="0.22">
+<label for="stance">Planted portion <output id="stanceValue"></output></label><input id="stance" type="range" min="0.52" max="0.75" step="0.01" value="0.62">
+<label for="heel">Heel strike <output id="heelValue"></output></label><input id="heel" type="range" min="0" max="35" step="1" value="23">
+<label for="toe">Toe-off <output id="toeValue"></output></label><input id="toe" type="range" min="0" max="40" step="1" value="28">
+<label for="hip">Hip swing accent <output id="hipValue"></output></label><input id="hip" type="range" min="0" max="0.22" step="0.01" value="0.10">
+<label for="bob">Body bounce <output id="bobValue"></output></label><input id="bob" type="range" min="0" max="0.10" step="0.005" value="0.010">
+<label for="flop">Antenna flop <output id="flopValue"></output></label><input id="flop" type="range" min="0" max="35" step="1" value="12">
+<label for="curiosity">Eye curiosity <output id="curiosityValue"></output></label><input id="curiosity" type="range" min="0" max="1" step="0.05" value="1.00">
+<label for="turn">Body glance <output id="turnValue"></output></label><input id="turn" type="range" min="0" max="12" step="1" value="12">
+<div><button id="toggle">Pause</button> <button id="reset" class="secondary">Reset walk & view</button></div>
+<p class="note">For the best view of planted feet, orbit towards either side. The model travels in the −Y direction (toward its toes). Try step lengths of 1.2–1.8 for a more emphatic stride. The camera tracks Blob.</p>
+<p class="note">The ankle bend still uses the continuous mesh. Eye motion is independent of the walk: Blob snaps his gaze rapidly to random points, holds it, occasionally blinks, then snaps back to neutral.</p>
+<div id="status">Loading curious Blob…</div></aside></div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const $=id=>document.getElementById(id), view=$('view'), status=$('status');
+const scene=new THREE.Scene();scene.background=new THREE.Color('#333b49');
+const camera=new THREE.PerspectiveCamera(38,1,.05,200);camera.up.set(0,0,1);camera.position.set(4,-7,3.45);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.5;view.prepend(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,0,1.15);controls.enableDamping=true;
+scene.add(new THREE.HemisphereLight(0xffffff,0x66738c,2.2));
+const key=new THREE.DirectionalLight(0xffffff,3);key.position.set(-3,-4,8);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-7;key.shadow.camera.right=7;key.shadow.camera.top=7;key.shadow.camera.bottom=-7;scene.add(key);
+const fill=new THREE.DirectionalLight(0xffffff,1);fill.position.set(4,2,4);scene.add(fill);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshStandardMaterial({color:'#66717a',roughness:.92}));ground.position.z=-.012;ground.receiveShadow=true;scene.add(ground);
+const grid=new THREE.GridHelper(500,1000,0x8a94a2,0x707985);grid.rotation.x=Math.PI/2;grid.position.z=-.008;grid.material.transparent=true;grid.material.opacity=.13;scene.add(grid);
+let shell, model, legs=[], antennas=[], eyes=[], clock=new THREE.Clock(),cycles=0,playing=true,lastBodyY=0;
+const smooth=t=>t*t*(3-2*t);
+const lerp=THREE.MathUtils.lerp;
+function slider(name,fmt){const el=$(name),out=$(name+'Value');const update=()=>out.textContent=fmt(+el.value);el.addEventListener('input',update);update();}
+slider('speed',v=>v.toFixed(2)+'×');slider('length',v=>v.toFixed(2));slider('lift',v=>v.toFixed(2));slider('stance',v=>Math.round(100*v)+'%');slider('heel',v=>v+'°');slider('toe',v=>v+'°');slider('hip',v=>v.toFixed(2));slider('bob',v=>v.toFixed(3));slider('flop',v=>v+'°');slider('curiosity',v=>Math.round(v*100)+'%');slider('turn',v=>v+'°');
+// GLB meshes use world-space vertex coordinates. Reparent at a world-space pivot
+// and subtract the same pivot from the child, preserving the original appearance.
+function attachAt(mesh,pivotPoint,parent){
+ const pivot=new THREE.Group();pivot.position.copy(pivotPoint);parent.add(pivot);
+ pivot.add(mesh);mesh.position.sub(pivotPoint);return pivot;
+}
+new GLTFLoader().load('./blob_v06.glb',gltf=>{
+ model=gltf.scene;model.updateMatrixWorld(true);shell=new THREE.Group();scene.add(shell);
+ const parts=[];model.traverse(o=>{if(o.isMesh)parts.push(o)});
+ const byName=new Map(parts.map(o=>[o.name,o]));
+ setupEyes(byName);
+ for(const o of parts)o.castShadow=true;
+ for(const o of parts){
+  if(o.name.startsWith('Leg_'))continue;
+  if(o.name.startsWith('Antenna_')){
+   const sign=o.name.includes('_L_')?-1:1;
+   const pt=new THREE.Vector3(sign*.53,.02,1.80);
+   const pivot=attachAt(o,pt,shell);
+   antennas.push({pivot,offset:sign<0?-.75:.9});
+  }else shell.add(o);
+ }
+ for(const [side,sign,offset] of [['L',-1,0],['R',1,.5]]){
+  const mesh=parts.find(o=>o.name.startsWith('Leg_'+side+'_'));
+  if(!mesh)throw Error('Missing original continuous leg '+side);
+  // Unbroken mesh (no split at the ankle). All vertices retain their original
+  // topological neighbours; only the small ankle flex region is blended.
+  scene.add(mesh);
+  // Positions are animated in world coordinates every frame. The original
+  // GLB bounds are therefore no longer valid for camera-frustum culling.
+  // Keep both legs rendered regardless of viewing angle.
+  mesh.frustumCulled=false;
+  const geometry=mesh.geometry.clone();mesh.geometry=geometry;
+  geometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
+  const pos=geometry.attributes.position;
+  const original=new Float32Array(pos.array);const weights=new Float32Array(pos.count);
+  const ankle=new THREE.Vector3(sign*.88,0,.475);
+  for(let i=0;i<pos.count;i++){
+   const h=original[3*i+2];
+   const u=THREE.MathUtils.clamp((h-.33)/(.62-.33),0,1);
+   weights[i]=smooth(u); // foot rigid below .33; upper leg rigid above .62
+  }
+  // Contact points from the bottom geometry, measured in original model space.
+  let heelY=.4,toeY=-.7;
+  for(let i=0;i<pos.count;i++){
+   const y=original[i*3+1],z=original[i*3+2];
+   if(Math.abs(z)<.012){heelY=Math.max(heelY,y);toeY=Math.min(toeY,y)}
+  }
+  legs.push({side,sign,offset,ankle,mesh,geometry,original,weights,heelY,toeY,
+             heelZ:0,toeZ:0});
+ }
+ status.textContent=`Loaded Blob (${parts.length} original meshes) · continuous ankle bend, visibility fix, animated gaze and blink.`;
+},undefined,err=>status.textContent='Model loading error: '+(err?.message||err));
+
+// The eyes are patches on the original tilted spherical surface, not little
+// floating eyeballs. Rebuild their positions on that surface each frame.
+const faceF=new THREE.Vector3(0,-Math.cos(Math.PI/6),Math.sin(Math.PI/6));
+const faceU=new THREE.Vector3(0,Math.sin(Math.PI/6),Math.cos(Math.PI/6));
+const faceR=new THREE.Vector3(1,0,0);
+const eyeCentre=new THREE.Vector3(0,0,1.15);
+function setupEyes(byName){
+ for(const side of ['L','R']){
+  const white=byName.get('Eye_white_'+side),pupil=byName.get('Pupil_centred_'+side);
+  if(!white||!pupil)continue;
+  const samples=[];
+  for(const mesh of [white,pupil]){
+   const g=mesh.geometry.clone();mesh.geometry=g;
+   const attr=g.attributes.position;attr.setUsage(THREE.DynamicDrawUsage);
+   const angles=new Float32Array(attr.count*2);
+   for(let i=0;i<attr.count;i++){
+    const d=new THREE.Vector3(attr.getX(i),attr.getY(i),attr.getZ(i)).sub(eyeCentre).normalize();
+    angles[2*i]=Math.atan2(d.dot(faceR),d.dot(faceF));
+    angles[2*i+1]=Math.asin(THREE.MathUtils.clamp(d.dot(faceU),-1,1));
+   }
+   mesh.frustumCulled=false;
+   samples.push({mesh,attr,angles,r:mesh===white?1.037:1.052});
+  }
+  eyes.push({side,samples});
+ }
+}
+let gazeX=0,gazeY=0,targetX=0,targetY=0,lookHold=2.4,lookReturn=false;
+let blinkWait=2.4,blinkElapsed=0,blinking=false,blinkCount=0;
+let idleTime=0;
+const random=(a,b)=>a+Math.random()*(b-a);
+function animateEyes(dt){
+ const curiosity=+$('curiosity').value;
+ if(playing){
+  lookHold-=dt;
+  if(lookHold<=0){
+   if(lookReturn||curiosity<.05){targetX=targetY=0;lookReturn=false;lookHold=random(1.5,3.2);}
+   else {targetX=random(-.125,.125)*curiosity;targetY=random(-.12,.10)*curiosity;lookReturn=true;lookHold=random(1.0,2.6);}
+  }
+  // Fast, nervous saccades: ~95% of each eye movement completes in 0.12s.
+  const follow=1-Math.exp(-dt*25.0);
+  gazeX=lerp(gazeX,targetX,follow);gazeY=lerp(gazeY,targetY,follow);
+  if(!blinking){blinkWait-=dt;if(blinkWait<=0){blinking=true;blinkElapsed=0;}}
+  else {blinkElapsed+=dt; if(blinkElapsed>=.19){blinking=false;blinkWait=random(2.0,5.7);}}
+ }
+ // Smoothly pinch the eye patches to slits, revealing the black mask behind.
+ const blinkPhase=blinking?Math.min(blinkElapsed/.19,1):0;
+ const blinkAmount=blinking?Math.pow(Math.sin(Math.PI*blinkPhase),1.2):0;
+ const open=1-.985*blinkAmount;
+ for(const eye of eyes){
+  const h0=eye.side==='L' ? -.52:.52;
+  for(const {mesh,attr,angles,r} of eye.samples){
+   const pupil=mesh.name.startsWith('Pupil_');
+   for(let i=0;i<attr.count;i++){
+    const h=h0+(angles[2*i]-h0)+(pupil?gazeX:0);
+    const v=(angles[2*i+1]+(pupil?gazeY:0))*open;
+    const cv=Math.cos(v),sv=Math.sin(v),ch=Math.cos(h),sh=Math.sin(h);
+    attr.setXYZ(i,r*(cv*ch*faceF.x+cv*sh*faceR.x+sv*faceU.x),
+        r*(cv*ch*faceF.y+cv*sh*faceR.y+sv*faceU.y),
+        1.15+r*(cv*ch*faceF.z+cv*sh*faceR.z+sv*faceU.z));
+   }
+   attr.needsUpdate=true;
+   mesh.geometry.computeVertexNormals();
+  }
+ }
+ return curiosity*THREE.MathUtils.clamp(gazeX/.125,-1,1)*THREE.MathUtils.degToRad(+$('turn').value);
+}
+
+function reset(){gazeX=gazeY=targetX=targetY=0;lookHold=1.8;blinkWait=2.2;blinking=false;cycles=0;lastBodyY=0;playing=true;$('toggle').textContent='Pause';if(shell){shell.position.set(0,0,0);shell.rotation.set(0,0,0)}camera.position.set(4,-7,3.45);controls.target.set(0,0,1.15);controls.update()}
+$('toggle').onclick=()=>{playing=!playing;$('toggle').textContent=playing?'Pause':'Play'};
+$('reset').onclick=reset;
+// Rotation around X: y' = y cos(a) - z sin(a); z' = y sin(a)+z cos(a).
+// Contact is computed from a foot-space heel, sole or toe point. That point is
+// held at Z=0 and fixed world Y for the full stance interval.
+function footPose(f,angle,anchor,kind){
+ const ptY=kind==='heel'?f.heelY:kind==='toe'?f.toeY:-.20;
+ const ptZ=kind==='heel'?f.heelZ:kind==='toe'?f.toeZ:0;
+ const dy=ptY-f.ankle.y,dz=ptZ-f.ankle.z;
+ const ry=dy*Math.cos(angle)-dz*Math.sin(angle);
+ const rz=dy*Math.sin(angle)+dz*Math.cos(angle);
+ return {y:anchor+ptY-ry,z:-rz,angle};
+}
+function gaitPose(f,c,L,stance,lift,heelMax,toeMax){
+ const k=Math.floor(c),u=c-k;
+ const anchor=n=>-L*(n-f.offset)-L*stance*.5+.20;
+ const A=anchor(k);
+ const heelEnd=.20,toeStart=.64;
+ if(u<stance){
+  const q=u/stance;
+  if(q<heelEnd)return footPose(f,-heelMax*(1-smooth(q/heelEnd)),A,'heel');
+  if(q<toeStart)return footPose(f,0,A,'sole');
+  return footPose(f,toeMax*smooth((q-toeStart)/(1-toeStart)),A,'toe');
+ }
+ const q=(u-stance)/(1-stance),t=smooth(q);
+ const from=footPose(f,toeMax,A,'toe'),to=footPose(f,-heelMax,anchor(k+1),'heel');
+ return {y:lerp(from.y,to.y,t),z:lerp(from.z,to.z,t)+lift*Math.sin(Math.PI*q),angle:lerp(toeMax,-heelMax,t)};
+}
+function animate(){
+ requestAnimationFrame(animate);
+ const dt=Math.min(clock.getDelta(),.05),speed=+$('speed').value,L=+$('length').value;
+ const stance=+$('stance').value,lift=+$('lift').value,bob=+$('bob').value,hip=+$('hip').value;
+ const heel=THREE.MathUtils.degToRad(+$('heel').value),toe=THREE.MathUtils.degToRad(+$('toe').value);
+ const flop=THREE.MathUtils.degToRad(+$('flop').value);
+ if(playing&&speed>0)cycles+=dt*1.1*speed;
+ const glanceYaw=animateEyes(playing?dt:0);
+ if(shell){
+  const bodyY=-L*cycles, phase=Math.sin(2*Math.PI*cycles);
+  const bodyX=.012*phase,bodyZ=bob*.5*(1-Math.cos(4*Math.PI*cycles));
+  shell.position.set(bodyX,bodyY,bodyZ);shell.rotation.set(0,.006*phase,glanceYaw+.007*phase);
+  for(const a of antennas)a.pivot.rotation.x=flop*Math.sin(2*Math.PI*cycles+a.offset);
+  for(const f of legs){
+   const pose=gaitPose(f,cycles+f.offset,L,stance,lift,heel,toe);
+   const ankleWorld=new THREE.Vector3(f.ankle.x+bodyX,pose.y,pose.z);
+   // The hip side rotates around the same ankle centre. The difference from
+   // previous versions: no detached mesh and no separate hinge transforms.
+   // Upper and lower rigid transformations meet at precisely this centre.
+   const localDZ=.32;
+   const desiredHipY=bodyY+hip*Math.sin(2*Math.PI*(cycles+f.offset));
+   const difference=THREE.MathUtils.clamp(desiredHipY-ankleWorld.y,-.20,.20);
+   const upperAngle=THREE.MathUtils.clamp(-Math.asin(difference/localDZ),-.62,.62);
+   // Animate a single connected topology. Only vertices in the narrow ankle
+   // transition (.33-.62 high) interpolate between the upper and foot poses.
+   // Translation and rotation never separate because both share ankleWorld.
+   const footCos=Math.cos(pose.angle), footSin=Math.sin(pose.angle);
+   const upCos=Math.cos(upperAngle),upSin=Math.sin(upperAngle);
+   const orig=f.original, weights=f.weights, dst=f.geometry.attributes.position;
+   for(let i=0;i<weights.length;i++){
+    const j=3*i,x=orig[j]-f.ankle.x,y=orig[j+1]-f.ankle.y,z=orig[j+2]-f.ankle.z;
+    const w=weights[i],a=footCos*(1-w)+upCos*w,b=footSin*(1-w)+upSin*w;
+    dst.array[j]=ankleWorld.x+x;
+    dst.array[j+1]=ankleWorld.y+y*a-z*b;
+    dst.array[j+2]=ankleWorld.z+y*b+z*a;
+   }
+   dst.needsUpdate=true;
+   f.geometry.computeVertexNormals();
+
+  }
+  const shift=bodyY-lastBodyY;camera.position.y+=shift;controls.target.y+=shift;lastBodyY=bodyY;
+ }
+ controls.update();renderer.render(scene,camera);
+}
+function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(view);resize();animate();
+</script></body></html>

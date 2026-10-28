@@ -1,0 +1,12 @@
+{
+  "name": "starquake-blob",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "check": "node --check src/main.js && node --check src/BlobCharacter.js && node --check src/WalkAnimator.js && node --check src/EyeAnimator.js",
+    "test": "python3 -m unittest discover -s tests"
+  },
+  "devDependencies": { "vite": "^6.3.0" }
+}
