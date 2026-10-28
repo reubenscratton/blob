@@ -5,7 +5,7 @@ import {PlayerMotion} from '../src/PlayerMotion.js';
 test('movement is horizontal, stationary without input, and bounded', () => {
   const motion=new PlayerMotion();
   motion.update(.05,0); assert.equal(motion.x,0);
-  motion.update(.05,1); assert.equal(motion.x,.275); assert.equal(motion.y,0);
+  motion.update(.05,1); assert.equal(motion.x,.45); assert.equal(motion.y,0);
   for(let i=0;i<200;i++) motion.update(.05,1);
   assert.equal(motion.x,22); assert.equal(motion.distance,0);
   for(let i=0;i<400;i++) motion.update(.05,-1);

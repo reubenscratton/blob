@@ -84,8 +84,8 @@ function animate() {
   }
   cameraX=THREE.MathUtils.damp(cameraX,motion.x,6,dt);
   // Fixed side-on view. A slight elevation reveals the floor's 3D depth.
-  const distance=Math.max(20,12/camera.aspect);
-  camera.position.set(cameraX,5,distance);
+  const distance=Math.max(40,24/camera.aspect);
+  camera.position.set(cameraX,8.7,distance);
   camera.lookAt(cameraX,1.3,0);
   renderer.render(scene,camera);
 }
