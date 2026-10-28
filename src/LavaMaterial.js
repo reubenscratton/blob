@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Blend independently chosen tiles at their borders. Side tiles may mirror but
-// never rotate, keeping their cavern channels vertical. Tops can rotate freely.
+// never rotate; tops may turn 180 degrees, preserving the same channel axis.
 export function createLavaMaterial(textures, vertical = false) {
   const bumps = textures.map(texture => {
     const bump=texture.clone(); bump.colorSpace=THREE.NoColorSpace; bump.needsUpdate=true;
@@ -26,7 +26,7 @@ float lavaHash(vec2 cell) {
 }
 vec4 lavaTile(vec2 p, vec2 cell, bool heightMap) {
   float h=lavaHash(cell);
-  ${vertical ? '' : 'float rotation=floor(fract(h*17.13)*4.0); if(rotation<1.0) p=p; else if(rotation<2.0) p=vec2(p.y,1.0-p.x); else if(rotation<3.0) p=1.0-p; else p=vec2(1.0-p.y,p.x);'}
+  ${vertical ? '' : 'if(fract(h*17.13)>.5) p=1.0-p;'}
   if(fract(h*31.7)>.5) p.x=1.0-p.x;
   p+=vec2(fract(h*13.1),fract(h*7.3));
   // Sides use only the three vertically fluted variants; tops use all four.
