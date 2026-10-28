@@ -25,7 +25,7 @@ export class PlayerMotion {
     this.angle = this.turnFrom + (this.turnTo - this.turnFrom) * t * t * (3 - 2 * t);
     const previousX = this.x;
     // Pivot in place before setting off in the new direction.
-    if (input && this.turnTime >= .18) this.x = Math.max(-22, Math.min(22, this.x + input * 9 * dt));
+    if (input && this.turnTime >= .18) this.x = Math.max(-22, Math.min(22, this.x + input * 16 * dt));
     this.distance = Math.abs(this.x - previousX);
     return this.distance;
   }
