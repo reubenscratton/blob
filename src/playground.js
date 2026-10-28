@@ -47,13 +47,15 @@ for (const x of [-24,24]) {
   box(x,2.24,0,.65,.08,5,'#f1c27b');
 }
 const motion = new PlayerMotion(), held = new Set();
-let character, cameraX = 0;
-const accepted = new Set(['ArrowLeft','ArrowRight','KeyA','KeyD']);
-function clearInput() { held.clear(); }
+let character, cameraX = 0, jumpPressed = false;
+const accepted = new Set(['ArrowLeft','ArrowRight','KeyA','KeyD','Space']);
+function clearInput() { held.clear(); jumpPressed = false; }
 window.addEventListener('keydown', event => {
   if (!accepted.has(event.code) || event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.target instanceof HTMLElement && event.target.closest('input,textarea,select,[contenteditable="true"]')) return;
-  event.preventDefault(); held.add(event.code);
+  event.preventDefault();
+  if(event.code==='Space' && !event.repeat && !held.has('Space')) jumpPressed = true;
+  held.add(event.code);
 });
 window.addEventListener('keyup', event => { held.delete(event.code); });
 window.addEventListener('blur', clearInput);
@@ -64,6 +66,7 @@ document.querySelector('#reset').addEventListener('click', () => {
 new GLTFLoader().load('/assets/blob.glb', gltf => {
   gltf.scene.updateMatrixWorld(true);
   character = new PlaygroundCharacter(gltf.scene, scene);
+  motion.jumpHeight = 2 * character.height;
   status.textContent = 'Ready · Facing right';
 }, undefined, error => {status.textContent = 'Could not load Blob: '+error.message;});
 function resize() {
@@ -77,8 +80,8 @@ function animate() {
   const dt=Math.min(clock.getDelta(),.05);
   const input=Number(held.has('ArrowRight')||held.has('KeyD'))-Number(held.has('ArrowLeft')||held.has('KeyA'));
   if (character) {
-    motion.update(dt,input); character.update(dt,motion);
-    const action=motion.turnTime<.18?'Turning':motion.distance>0?'Walking':'Standing';
+    motion.update(dt,input,jumpPressed); jumpPressed=false; character.update(dt,motion);
+    const action=motion.airborne?'Airborne':motion.turnTime<.18?'Turning':motion.distance>0?'Walking':'Standing';
     const label=`${action} · Facing ${motion.direction>0?'right':'left'}`;
     if(status.textContent!==label) status.textContent=label;
   }

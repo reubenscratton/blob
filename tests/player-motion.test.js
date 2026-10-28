@@ -27,3 +27,16 @@ test('reversal pivots smoothly through 180 degrees before walking', () => {
   assert.ok(Math.abs(motion.angle-halfway)<.1, 'rapid reversal stays continuous');
   motion.reset(); assert.equal(motion.x,0); assert.equal(motion.direction,1);
 });
+
+test('jump reaches its specified apex, keeps air control, and lands exactly', () => {
+  const motion=new PlayerMotion();
+  motion.jumpHeight=5.6;
+  motion.update(.25,1,true);
+  assert.equal(motion.airborne,true); assert.equal(motion.x,4);
+  motion.update(.25,-1,true); // A second press in the air cannot restart the arc.
+  assert.equal(motion.y,5.6); assert.equal(motion.x,0);
+  motion.update(.25,0); assert.ok(motion.y>0 && motion.y<5.6);
+  motion.update(.25,0); assert.equal(motion.y,0); assert.equal(motion.airborne,false);
+  motion.update(.1,0,true); assert.equal(motion.airborne,true);
+  motion.reset(); assert.equal(motion.y,0); assert.equal(motion.airborne,false);
+});

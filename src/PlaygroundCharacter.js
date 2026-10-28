@@ -7,6 +7,7 @@ import {gaitPose} from './WalkAnimator.js';
 const settings = {curiosity: {value: 1}, turn: {value: 12}};
 export class PlaygroundCharacter {
   constructor(model, scene) {
+    this.height = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3()).z;
     this.root = new THREE.Group();
     scene.add(this.root);
     // Map model +Z up to game +Y up without editing the approved mesh.
@@ -19,14 +20,19 @@ export class PlaygroundCharacter {
     Object.assign(this, setupBlobCharacter(model, this.facing, this.shell, this.eyes));
     this.cycles = 0;
     this.weight = 0;
+    this.airWeight = 0;
   }
-  reset() { this.cycles = 0; this.weight = 0; this.eyes.resetEyes(); }
+  reset() { this.cycles = 0; this.weight = 0; this.airWeight = 0; this.eyes.resetEyes(); }
   update(dt, motion) {
-    const moving = motion.distance > 0;
+    const moving = motion.distance > 0 && !motion.airborne;
     // Fade a stopped stride back into the original grounded standing mesh.
     this.weight = THREE.MathUtils.damp(this.weight, moving ? 1 : 0, 22, dt);
     if (moving) this.cycles += motion.distance / 2.5;
-    const {shell, legs, antennas, cycles, weight} = this;
+    this.airWeight = THREE.MathUtils.damp(this.airWeight, motion.airborne ? 1 : 0, 24, dt);
+    // Ease out before contact so the hanging toes never pass through the floor.
+    const hang = this.airWeight * THREE.MathUtils.smoothstep(motion.y, 0, .6);
+    const {shell, legs, antennas, cycles} = this;
+    const weight = this.weight * (1 - hang);
     const L=2.5, stance=.62, lift=.22, hip=.10;
     const heel=THREE.MathUtils.degToRad(23), toe=THREE.MathUtils.degToRad(28);
     const phase=Math.sin(2*Math.PI*cycles), bodyY=-L*cycles;
@@ -56,6 +62,12 @@ export class PlaygroundCharacter {
     dst.array[j]=orig[j]+weight*(ankleWorld.x+x-orig[j]);
     dst.array[j+1]=orig[j+1]+weight*(ankleWorld.y+y*a-z*b-orig[j+1]);
     dst.array[j+2]=orig[j+2]+weight*(ankleWorld.z+y*b+z*a-orig[j+2]);
+    // Let the rigid foot tip down 12 degrees, blending through the same ankle
+    // region as the walk so the approved continuous mesh stays connected.
+    const droop = THREE.MathUtils.degToRad(12) * hang * (1-w);
+    const c = Math.cos(droop), s = Math.sin(droop);
+    dst.array[j+1] += hang*(1-w)*(-.04) + y*(c-1)-z*s;
+    dst.array[j+2] += hang*(1-w)*(-.06) + y*s+z*(c-1);
    }
    dst.needsUpdate=true;
    f.geometry.computeVertexNormals();
