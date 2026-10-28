@@ -1,6 +1,6 @@
 # Vertical cooled lava variants
 
-Generated with the built-in imagegen tool. The existing cooled-lava.png is retained. New color tiles: cooled-lava-a.png, cooled-lava-b.png, cooled-lava-c.png. Side materials use only the upright variants, with mirrored and offset samples and blended borders. The top may use all four tiles and rotate them. Colors and bump relief use the same selections.
+Generated with the built-in imagegen tool. The original cooled-lava.png was subsequently regenerated to match the vertical set; see cooled-lava-prompt.md for its replacement prompt. New color tiles: cooled-lava-a.png, cooled-lava-b.png, cooled-lava-c.png. Side materials use only the upright variants, with mirrored and offset samples and blended borders. The top may use all four tiles and rotate them. Colors and bump relief use the same selections.
 
 ## Exact generation prompts
 
