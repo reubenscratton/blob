@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {PlayerMotion} from './PlayerMotion.js';
 import {PlaygroundCharacter} from './PlaygroundCharacter.js';
+import {createLavaFloor} from './LavaFloor.js';
 
 const view = document.querySelector('#view'), status = document.querySelector('#status');
 const scene = new THREE.Scene();
@@ -32,10 +33,8 @@ function box(x,y,z,w,h,d,color) {
   scene.add(mesh); return mesh;
 }
 // One continuous, flat test lane. Background forms are scenery, outside the play plane.
-box(0,-.45,0,50,.9,5,'#4e6775');
-box(0,-.65,2.55,50,.32,.12,'#91d9c8');
+createLavaFloor(scene,renderer).catch(error => console.error('Lava floor texture could not load:',error));
 for (let x=-20; x<=20; x+=5) {
-  box(x,.012,0,.055,.025,4.8,'#91a8b5');
   box(x,1,-5,.22,2,.3,'#3c536b');
 }
 for (const [x,h,w] of [[-20,6,5],[-12,3,4],[-4,7,5],[5,4,5],[14,8,6],[22,3,3]]) {

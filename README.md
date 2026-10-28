@@ -17,11 +17,12 @@ Open the local URL printed by Vite (normally `http://localhost:5173/`). Drag to 
 
 Open `http://localhost:5173/playground.html` after starting Vite, or follow **Open keyboard playground** in the character viewer. Use **Left/Right arrows** or **A/D** to move and **Space** to jump. A jump lifts his feet twice his standing height above the floor over a one-second arc. Horizontal control stays active in the air, with his walk paused and feet tipped down slightly. Tap again after landing for another jump; holding Space does not repeat. Reversing direction makes Blob pivot through 180° in 0.18 seconds before walking again. Releasing the keys settles him into a grounded stand; eyes stay active. Reset playground restores the starting position and camera. Losing focus clears held keys.
 
-The flat test lane has solid end limits and a following side-on camera. The camera is pulled back for a wider view; Blob walks at 16 world units per second, with stride timing matched to ground speed. Background structures are scenery. Gameplay uses X horizontally and Y vertically, with Z depth locked; a parent transform adapts the approved Z-up character without changing the GLB. Platform collisions are future work; jumps currently land on the flat test lane. The original viewer and all its animation controls remain at `/`.
+The flat test lane has solid end limits and a following side-on camera. The camera is pulled back for a wider view; Blob walks at 16 world units per second, with stride timing matched to ground speed. The floor uses a generated red-and-black cooled-lava texture with bump relief and an irregular rock skirt, inspired by the original Starquake formations. Its walkable top stays flat. See `assets/textures/cooled-lava-prompt.md` for the generation prompt. Background structures are scenery. Gameplay uses X horizontally and Y vertically, with Z depth locked; a parent transform adapts the approved Z-up character without changing the GLB. Platform collisions are future work; jumps currently land on the flat test lane. The original viewer and all its animation controls remain at `/`.
 
 - `src/PlayerMotion.js` — movement limits and timed direction changes
 - `src/PlaygroundCharacter.js` — approved gait/eyes adapted to a movable character root
 - `src/playground.js` — test level, keyboard input, lighting and follow camera
+- `src/LavaFloor.js` — textured cooled-lava platform and decorative rock skirt
 
 ## Code layout
 
