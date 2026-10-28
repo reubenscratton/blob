@@ -3,6 +3,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {PlayerMotion} from './PlayerMotion.js';
 import {PlaygroundCharacter} from './PlaygroundCharacter.js';
 import {createLavaFloor} from './LavaFloor.js';
+import {ElectricBolts} from './ElectricBolts.js';
 
 const view = document.querySelector('#view'), status = document.querySelector('#status');
 const scene = new THREE.Scene();
@@ -45,10 +46,10 @@ for (const x of [-24,24]) {
   box(x,1.1,0,.5,2.2,4.8,'#667b8a');
   box(x,2.24,0,.65,.08,5,'#f1c27b');
 }
-const motion = new PlayerMotion(), held = new Set();
-let character, cameraX = 0, jumpPressed = false;
-const accepted = new Set(['ArrowLeft','ArrowRight','KeyA','KeyD','Space']);
-function clearInput() { held.clear(); jumpPressed = false; }
+const motion = new PlayerMotion(), held = new Set(), bolts = new ElectricBolts(scene);
+let character, cameraX = 0, jumpPressed = false, firePressed = false;
+const accepted = new Set(['ArrowLeft','ArrowRight','KeyA','KeyD','Space','KeyF']);
+function clearInput() { held.clear(); jumpPressed = false; firePressed = false; }
 window.addEventListener('keydown', event => {
   if (!accepted.has(event.code) || event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.target instanceof HTMLElement && event.target.closest('input,textarea,select,[contenteditable="true"]')) return;
@@ -60,8 +61,9 @@ window.addEventListener('keyup', event => { held.delete(event.code); });
 window.addEventListener('blur', clearInput);
 document.addEventListener('visibilitychange', () => { if(document.hidden) clearInput(); });
 document.querySelector('#reset').addEventListener('click', () => {
-  clearInput(); motion.reset(); character?.reset(); cameraX=0;
+  clearInput(); motion.reset(); character?.reset(); bolts.clear(); cameraX=0;
 });
+document.querySelector('#fire').addEventListener('click',()=>{firePressed=true;});
 new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href, gltf => {
   gltf.scene.updateMatrixWorld(true);
   character = new PlaygroundCharacter(gltf.scene, scene);
@@ -78,8 +80,11 @@ function animate() {
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),.05);
   const input=Number(held.has('ArrowRight')||held.has('KeyD'))-Number(held.has('ArrowLeft')||held.has('KeyA'));
+  bolts.update(dt);
   if (character) {
     motion.update(dt,input,jumpPressed); jumpPressed=false; character.update(dt,motion);
+    if(firePressed||held.has('KeyF')) bolts.fire(motion,character.width,character.height);
+    firePressed=false;
     const action=motion.airborne?'Airborne':motion.turnTime<.18?'Turning':motion.distance>0?'Walking':'Standing';
     const label=`${action} · Facing ${motion.direction>0?'right':'left'}`;
     if(status.textContent!==label) status.textContent=label;

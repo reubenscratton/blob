@@ -7,7 +7,9 @@ import {gaitPose} from './WalkAnimator.js';
 const settings = {curiosity: {value: 1}, turn: {value: 12}};
 export class PlaygroundCharacter {
   constructor(model, scene) {
-    this.height = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3()).z;
+    const size = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
+    this.height = size.z;
+    this.width = size.y; // Forward/back extent becomes horizontal when side-on.
     this.root = new THREE.Group();
     scene.add(this.root);
     // Map model +Z up to game +Y up without editing the approved mesh.
