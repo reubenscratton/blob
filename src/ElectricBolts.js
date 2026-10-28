@@ -13,8 +13,8 @@ export class ElectricBolts {
       fragmentShader:`varying float vEdge;
         void main(){
           float halo=exp(-vEdge*vEdge*5.0);
-          float core=exp(-vEdge*vEdge*260.0);
-          vec3 color=mix(vec3(.02,.45,1.0),vec3(.85,1.0,1.0),core);
+          float core=exp(-vEdge*vEdge*180.0);
+          vec3 color=mix(vec3(1.0,.55,.015),vec3(1.0,.96,.65),core);
           gl_FragColor=vec4(color,halo*.55+core*.8);
         }`,
     });
@@ -29,7 +29,7 @@ export class ElectricBolts {
       mesh.visible=false; mesh.frustumCulled=false;
       mesh.renderOrder=2;
       scene.add(mesh);
-      const light=new THREE.PointLight(0x39cfff,0,7,2);
+      const light=new THREE.PointLight(0xffc32e,0,7,2);
       scene.add(light);
       return {mesh,light,age:LIFETIME,index,direction:1,length:1};
     });
@@ -45,7 +45,7 @@ export class ElectricBolts {
     bolt.mesh.visible=true;
     this.shape(bolt);
     bolt.light.position.copy(bolt.mesh.position);
-    bolt.light.intensity=100;
+    bolt.light.intensity=35;
     return true;
   }
   shape(bolt) {
@@ -53,9 +53,9 @@ export class ElectricBolts {
     for(let i=0;i<=SEGMENTS;i++) {
       const t=i/SEGMENTS;
       const zigzag=(i===0||i===SEGMENTS)?0:(i%2?1:-1)*(.13+.035*Math.sin(bolt.age*70+i*9+bolt.index));
-      // Broad soft halo around a very narrow white-blue electric core.
-      positions.setXYZ(i*2,(t-.5)*bolt.length,zigzag-.22,0);
-      positions.setXYZ(i*2+1,(t-.5)*bolt.length,zigzag+.22,0);
+      // Broad golden halo around a thicker warm-white electric core.
+      positions.setXYZ(i*2,(t-.5)*bolt.length,zigzag-.30,0);
+      positions.setXYZ(i*2+1,(t-.5)*bolt.length,zigzag+.30,0);
     }
     positions.needsUpdate=true;
   }
@@ -69,7 +69,7 @@ export class ElectricBolts {
       this.shape(bolt);
       bolt.light.position.copy(bolt.mesh.position);
       const fade=Math.min(1,(LIFETIME-bolt.age)/.15);
-      bolt.light.intensity=(90+15*Math.sin(bolt.age*90+bolt.index))*fade;
+      bolt.light.intensity=(30+5*Math.sin(bolt.age*90+bolt.index))*fade;
     }
   }
   clear() {
