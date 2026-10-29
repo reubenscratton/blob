@@ -26,7 +26,7 @@ export function createRockColumns() {
       const t=row/rings;
       // Full-width attachment at the top; only the hanging end tapers.
       const taper=1-(1-tipRadius)*smooth((t-taperStart)/(1-taperStart));
-      const swell=1+.11*Math.sin(t*12+phase)+.055*Math.sin(t*27+phase);
+      const swell=1+.025*Math.sin(t*12+phase)+.01*Math.sin(t*27+phase);
       const radius=taper*swell;
       const cx=x+lean*t+.06*Math.sin(t*7+phase)*Math.sin(Math.PI*t);
       const cy=-.03-t*length;
@@ -36,7 +36,7 @@ export function createRockColumns() {
         positions.push(cx+c*width*radius*flute,cy, z+sign*s*depth*radius*flute);
         // Viewed from the side, the forward-facing middle stays near black;
         // the curved flanks rise through deep crimson to bright red edges.
-        const edge=Math.pow(Math.abs(c),2.6);
+        const edge=smooth((Math.abs(c)-.12)/.53);
         const striation=.88+.12*Math.sin(angle*9+t*12+phase);
         const rim=(.018+.982*edge)*striation;
         colors.push(red*rim,.006+rim*.009,.009+rim*.005);
@@ -77,7 +77,8 @@ export function createRockColumns() {
     for(const piece of pieces) piece.dispose();
     const mesh=new THREE.Mesh(geometry,material);
     mesh.name=sign>0?'Front overlapping rock columns':'Rear overlapping rock columns';
-    mesh.castShadow=true; mesh.receiveShadow=true;
+    // Intersecting clusters must not cast dark bands across neighbouring rims.
+    mesh.castShadow=false; mesh.receiveShadow=true;
     root.add(mesh);
   }
   return root;
