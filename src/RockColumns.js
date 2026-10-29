@@ -12,9 +12,9 @@ export function createRockColumns() {
   function column(x,sign,layer) {
     const rings=18, segments=24;
     const length=.9+Math.pow(random(),.7)*2.5;
-    const width=(layer===0?.43:.27)+random()*(layer===0?.26:.22);
+    const width=(layer===0?.28:.16)+Math.pow(random(),1.3)*(layer===0?.86:.74);
     const depth=.27+random()*.22;
-    const z=sign*(layer===0?2.23:2.55);
+    const z=sign*((layer===0?2.25:2.5)+.1*Math.sin(x*1.7+layer*2));
     const phase=random()*Math.PI*2, lean=(random()-.5)*.35;
     const positions=[], colors=[], indices=[];
     const red=.65+random()*.28;
@@ -70,7 +70,7 @@ export function createRockColumns() {
       let x=-24.7+(layer===0?0:.38);
       while(x<24.8) {
         pieces.push(column(x,sign,layer));
-        x+=layer===0?.8+random()*.3:.61+random()*.34;
+        x+=layer===0?.62+random()*.3:.43+random()*.3;
       }
     }
     const geometry=mergeGeometries(pieces);
