@@ -35,12 +35,14 @@ export function createRockColumns() {
       const radius=taper*swell;
       const cx=x+lean*t+.06*Math.sin(t*7+phase)*Math.sin(Math.PI*t);
       const cy=-.03-t*length;
-      const left=chip(row,0), right=chip(row,1);
+      // Each flank has its own broad contour as well as independent chips.
+      const left=(1+.16*Math.sin(t*11+phase)+.07*Math.sin(t*25+phase*1.7))*chip(row,0);
+      const right=(1+.16*Math.sin(t*8.3+phase*2.3+2)+.07*Math.sin(t*21+phase*.7+1))*chip(row,1);
       for(let j=0;j<=segments;j++) {
         const angle=j/segments*Math.PI*2, c=Math.cos(angle), s=Math.sin(angle);
         const flute=1+.075*Math.cos(angle*5+Math.sin(t*5+phase));
-        const edgeScale=1+((c<0?left:right)-1)*Math.pow(Math.abs(c),2);
-        positions.push(cx+c*width*radius*flute*edgeScale,cy, z+sign*s*depth*radius*flute);
+        const edgeScale=(c<0?left:right);
+        positions.push(cx+c*width*taper*flute*edgeScale,cy, z+sign*s*depth*radius*flute);
         // Viewed from the side, the forward-facing middle stays near black;
         // the curved flanks rise through deep crimson to bright red edges.
         const edge=Math.pow(Math.abs(c),2.6);
