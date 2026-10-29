@@ -18,12 +18,16 @@ export function createRockColumns() {
     const phase=random()*Math.PI*2, lean=(random()-.5)*.35;
     const positions=[], colors=[], indices=[];
     const red=.65+random()*.28;
+    // Derive tip variety from each existing shape, preserving cluster placement.
+    const pointiness=.5+.5*Math.sin(phase*7.13+length*3.7);
+    const tipRadius=.18+.43*(1-pointiness);
+    const taperStart=.62+.18*(1-pointiness);
     for(let row=0;row<=rings;row++) {
       const t=row/rings;
-      const crown=.16+.84*smooth(t/.14);
-      const taper=1-.97*smooth((t-.56)/.44);
+      // Full-width attachment at the top; only the hanging end tapers.
+      const taper=1-(1-tipRadius)*smooth((t-taperStart)/(1-taperStart));
       const swell=1+.11*Math.sin(t*12+phase)+.055*Math.sin(t*27+phase);
-      const radius=crown*taper*swell;
+      const radius=taper*swell;
       const cx=x+lean*t+.06*Math.sin(t*7+phase)*Math.sin(Math.PI*t);
       const cy=-.03-t*length;
       for(let j=0;j<=segments;j++) {
