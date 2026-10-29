@@ -45,7 +45,10 @@ export function createRockColumns() {
         positions.push(cx+c*width*taper*flute*edgeScale,cy, z+sign*s*depth*radius*flute);
         // Viewed from the side, the forward-facing middle stays near black;
         // the curved flanks rise through deep crimson to bright red edges.
-        const edge=Math.pow(Math.abs(c),2.6);
+        const channelWidth=1-smooth((t-.55)/.4);
+        const edge=channelWidth>0
+          ? Math.pow(Math.min(1,Math.abs(c)/channelWidth),2.6)
+          : 1;
         const striation=.88+.12*Math.sin(angle*9+t*12+phase);
         const rim=(.018+.982*edge)*striation;
         colors.push(red*rim,.006+rim*.009,.009+rim*.005);
