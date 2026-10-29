@@ -34,7 +34,11 @@ function box(x,y,z,w,h,d,color) {
   scene.add(mesh); return mesh;
 }
 // One continuous, flat test lane. Background forms are scenery, outside the play plane.
-createLavaFloor(scene,renderer).catch(error => console.error('Lava floor texture could not load:',error));
+const geometricSides=new URLSearchParams(location.search).get('rock')!=='texture';
+const comparison=document.querySelector('#compare-rocks');
+comparison.href=geometricSides?'?rock=texture':'?rock=geometry';
+comparison.textContent=geometricSides?'Compare textured rocks':'Try geometric rocks';
+createLavaFloor(scene,renderer,{geometricSides}).catch(error => console.error('Lava floor texture could not load:',error));
 for (let x=-20; x<=20; x+=5) {
   box(x,1,-5,.22,2,.3,'#3c536b');
 }

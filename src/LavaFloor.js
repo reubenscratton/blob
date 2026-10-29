@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import {createLavaMaterial} from './LavaMaterial.js';
+import {createRockColumns} from './RockColumns.js';
 
 // Flat gameplay surface, with relief supplied by the material and exposed skirt.
 // The decorative lower edge never changes the player's collision plane (Y=0).
-export async function createLavaFloor(scene, renderer) {
+export async function createLavaFloor(scene, renderer, {geometricSides = true} = {}) {
   const loader=new THREE.TextureLoader();
   const textures=await Promise.all(['cooled-lava','cooled-lava-a','cooled-lava-b','cooled-lava-c']
     .map(name=>loader.loadAsync(new URL(`../assets/textures/${name}.png`,import.meta.url).href)));
@@ -79,7 +80,7 @@ export async function createLavaFloor(scene, renderer) {
     skirt.computeVertexNormals();
     // The shoulder ends vertically: match that tangent along the shared rim.
     for(let i=0;i<=200;i++) skirt.attributes.normal.setXYZ(i,0,0,sign);
-    add(skirt);
+    if(!geometricSides) add(skirt); else skirt.dispose();
   }
   for (const sign of [-1,1]) {
     // End caps follow the same rounded profile, avoiding square protruding ears.
@@ -101,6 +102,7 @@ export async function createLavaFloor(scene, renderer) {
     end.translate(sign*25,0,0);
     add(end);
   }
+  if(geometricSides) root.add(createRockColumns());
   scene.add(root);
   return root;
 }
