@@ -34,6 +34,11 @@ export function createRockColumns() {
     const pointiness=.5+.5*Math.sin(phase*7.13+length*3.7);
     const tipRadius=.18+.43*(1-pointiness);
     const taperStart=.62+.18*(1-pointiness);
+    // Independent chipped outlines on each flank; do not consume placement RNG.
+    const chip=(row,side)=>{
+      const n=Math.sin(row*91.73+phase*37.19+side*173.41)*43758.5453;
+      return .82+.36*(n-Math.floor(n));
+    };
     for(let row=0;row<=rings;row++) {
       const t=row/rings;
       // Full-width attachment at the top; only the hanging end tapers.
@@ -42,11 +47,14 @@ export function createRockColumns() {
       const radius=taper*swell;
       const cx=x+lean*t+.06*Math.sin(t*7+phase)*Math.sin(Math.PI*t);
       const cy=-.03-t*length;
-      profile.push({x:cx,y:cy,radius});
+      const left=chip(row,0), right=chip(row,1);
+      profile.push({x:cx+width*radius*(right-left)/2,y:cy,radius:radius*(left+right)/2});
       for(let j=0;j<=segments;j++) {
         const angle=j/segments*Math.PI*2, c=Math.cos(angle), s=Math.sin(angle);
         const flute=1+.075*Math.cos(angle*5+Math.sin(t*5+phase));
-        positions.push(cx+c*width*radius*flute,cy, z+sign*s*depth*radius*flute);
+        // Concentrate asymmetry at the silhouette, leaving the dark centre intact.
+        const edgeScale=1+((c<0?left:right)-1)*Math.pow(Math.abs(c),2);
+        positions.push(cx+c*width*radius*flute*edgeScale,cy, z+sign*s*depth*radius*flute);
         uvs.push(j/segments,t);
         // Viewed from the side, the forward-facing middle stays near black;
         // the curved flanks rise through deep crimson to bright red edges.
