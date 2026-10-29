@@ -12,12 +12,14 @@ export function createRockColumns() {
   function column(x,sign,layer) {
     const rings=18, segments=24;
     const length=.9+Math.pow(random(),.7)*2.5;
-    const width=(layer===0?.43:.27)+random()*(layer===0?.26:.22);
+    const width=(layer===0?.30:.19)+random()*(layer===0?.53:.42);
     const depth=.27+random()*.22;
     const z=sign*(layer===0?2.23:2.55);
     const phase=random()*Math.PI*2, lean=(random()-.5)*.35;
     const positions=[], colors=[], indices=[];
     const red=.65+random()*.28;
+    // Vary the dark face independently without disturbing seeded placement.
+    const channelScale=.7+.5*(.5+.5*Math.sin(phase*5.71+length*2.13));
     // Derive tip variety from each existing shape, preserving cluster placement.
     const pointiness=.5+.5*Math.sin(phase*7.13+length*3.7);
     const tipRadius=.18+.43*(1-pointiness);
@@ -45,7 +47,7 @@ export function createRockColumns() {
         positions.push(cx+c*width*taper*flute*edgeScale,cy, z+sign*s*depth*radius*flute);
         // Viewed from the side, the forward-facing middle stays near black;
         // the curved flanks rise through deep crimson to bright red edges.
-        const channelWidth=1-smooth((t-.55)/.4);
+        const channelWidth=channelScale*(1-smooth((t-.55)/.4));
         const edge=channelWidth>0
           ? Math.pow(Math.min(1,Math.abs(c)/channelWidth),2.6)
           : 1;
