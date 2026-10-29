@@ -22,8 +22,7 @@ export function createRockColumns() {
     const channelScale=.7+.5*(.5+.5*Math.sin(phase*5.71+length*2.13));
     // Derive tip variety from each existing shape, preserving cluster placement.
     const pointiness=.5+.5*Math.sin(phase*7.13+length*3.7);
-    const tipRadius=.18+.43*(1-pointiness);
-    const taperStart=.62+.18*(1-pointiness);
+    const tipRadius=.07+.18*(1-pointiness);
     // Independent chipped outlines without changing the seeded cluster layout.
     const chip=(row,side)=>{
       const n=Math.sin(row*91.73+phase*37.19+side*173.41)*43758.5453;
@@ -31,15 +30,15 @@ export function createRockColumns() {
     };
     for(let row=0;row<=rings;row++) {
       const t=row/rings;
-      // Full-width attachment at the top; only the hanging end tapers.
-      const taper=1-(1-tipRadius)*smooth((t-taperStart)/(1-taperStart));
-      const swell=1+.11*Math.sin(t*12+phase)+.055*Math.sin(t*27+phase);
+      // Broad attachment narrows along the whole hanging formation.
+      const taper=tipRadius+(1-tipRadius)*Math.pow(1-t,1.05+.35*pointiness);
+      const swell=1+.035*Math.sin(t*12+phase)+.015*Math.sin(t*27+phase);
       const radius=taper*swell;
       const cx=x+lean*t+.06*Math.sin(t*7+phase)*Math.sin(Math.PI*t);
       const cy=-.03-t*length;
       // Each flank has its own broad contour as well as independent chips.
-      const left=(1+.16*Math.sin(t*11+phase)+.07*Math.sin(t*25+phase*1.7))*chip(row,0);
-      const right=(1+.16*Math.sin(t*8.3+phase*2.3+2)+.07*Math.sin(t*21+phase*.7+1))*chip(row,1);
+      const left=(1+.10*Math.sin(t*11+phase)+.045*Math.sin(t*25+phase*1.7))*chip(row,0);
+      const right=(1+.10*Math.sin(t*8.3+phase*2.3+2)+.045*Math.sin(t*21+phase*.7+1))*chip(row,1);
       for(let j=0;j<=segments;j++) {
         const angle=j/segments*Math.PI*2, c=Math.cos(angle), s=Math.sin(angle);
         const flute=1+.075*Math.cos(angle*5+Math.sin(t*5+phase));
