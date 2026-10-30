@@ -3,19 +3,19 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Reference-inspired hanging rock clusters: all contours, taper and overlap are
 // geometry. Vertex colors give each curved column a dark face and red side rims.
-export function createRockColumns() {
+export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5}={}) {
   const root=new THREE.Group(); root.name='Experimental Starquake rock columns';
   const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.66,metalness:0});
   let seed=1986;
   const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
   const smooth=t=>{t=THREE.MathUtils.clamp(t,0,1);return t*t*(3-2*t);};
   function column(x,sign,layer) {
-    const rings=18, segments=24;
+    const rings=18+Math.ceil(bodyHeight*6), segments=24;
     const length=.9+Math.pow(random(),.7)*2.5;
     const width=(layer===0?.30:.19)+random()*(layer===0?.53:.42);
     // Keep broad formations rounded in depth as well as in silhouette.
     const depth=Math.max(.42,width*.95)+random()*.22;
-    const z=sign*(layer===0?2.23:2.55);
+    const z=sign*(halfDepth+(layer===0?-.27:.05));
     const phase=random()*Math.PI*2, lean=(random()-.5)*.35;
     const positions=[], colors=[], indices=[];
     const red=.65+random()*.28;
@@ -30,13 +30,18 @@ export function createRockColumns() {
       return .82+.36*(n-Math.floor(n));
     };
     for(let row=0;row<=rings;row++) {
-      const t=row/rings;
+      const travel=row/rings*(bodyHeight+length);
+      const t=bodyHeight>0?travel/(bodyHeight+length):row/rings;
+      const tipT=bodyHeight>0?THREE.MathUtils.clamp((travel-bodyHeight)/length,0,1):t;
       // Broad attachment narrows along the whole hanging formation.
-      const taper=tipRadius+(1-tipRadius)*Math.pow(1-t,1.05+.35*pointiness);
+      const taper=tipRadius+(1-tipRadius)*Math.pow(1-tipT,1.05+.35*pointiness);
       const swell=1+.035*Math.sin(t*12+phase)+.015*Math.sin(t*27+phase);
       const radius=taper*swell;
-      const cx=x+lean*t+.06*Math.sin(t*7+phase)*Math.sin(Math.PI*t);
-      const cy=-.03-t*length;
+      const bend=bodyHeight>0
+        ? .22*Math.sin(travel*1.45+phase)+.10*Math.sin(travel*3.1+phase*2)
+        : 0;
+      const cx=x+lean*t+.06*Math.sin(t*7+phase)*Math.sin(Math.PI*t)+bend;
+      const cy=-.03-travel;
       // Each flank has its own broad contour as well as independent chips.
       const left=(1+.10*Math.sin(t*11+phase)+.045*Math.sin(t*25+phase*1.7))*chip(row,0);
       const right=(1+.10*Math.sin(t*8.3+phase*2.3+2)+.045*Math.sin(t*21+phase*.7+1))*chip(row,1);
@@ -47,7 +52,8 @@ export function createRockColumns() {
         positions.push(cx+c*width*taper*flute*edgeScale,cy, z+sign*s*depth*radius*flute);
         // Viewed from the side, the forward-facing middle stays near black;
         // the curved flanks rise through deep crimson to bright red edges.
-        const channelWidth=channelScale*(1-smooth((t-.55)/.4));
+        const channelVariation=bodyHeight>0?.85+.15*Math.sin(travel*2.1+phase):1;
+        const channelWidth=channelScale*channelVariation*(1-smooth((tipT-.55)/.4));
         const edge=channelWidth>0
           ? Math.pow(Math.min(1,Math.abs(c)/channelWidth),2.6)
           : 1;
@@ -81,8 +87,8 @@ export function createRockColumns() {
   for(const sign of [-1,1]) {
     const pieces=[];
     for(let layer=0;layer<2;layer++) {
-      let x=-24.7+(layer===0?0:.38);
-      while(x<24.8) {
+      let x=-span/2+.3+(layer===0?0:.38);
+      while(x<span/2-.2) {
         pieces.push(column(x,sign,layer));
         x+=layer===0?.8+random()*.3:.61+random()*.34;
       }

@@ -4,6 +4,7 @@ import {PlayerMotion} from './PlayerMotion.js';
 import {PlaygroundCharacter} from './PlaygroundCharacter.js';
 import {createLavaFloor} from './LavaFloor.js';
 import {ElectricBolts} from './ElectricBolts.js';
+import {createRockSection} from './RockSection.js';
 
 const view = document.querySelector('#view'), status = document.querySelector('#status');
 const scene = new THREE.Scene();
@@ -43,8 +44,14 @@ for (let x=-20; x<=20; x+=5) {
   box(x,1,-5,.22,2,.3,'#3c536b');
 }
 for (const [x,h,w] of [[-20,6,5],[-12,3,4],[-4,7,5],[5,4,5],[14,8,6],[22,3,3]]) {
-  box(x,h/2,-10,w,h,2,'#2b3e55');
-  box(x,h+.08,-10,w+.3,.16,2.3,'#53718a');
+  if(geometricSides) {
+    const rock=createRockSection({width:w,height:h,depth:3});
+    rock.position.set(x,h,-7);
+    scene.add(rock);
+  } else {
+    box(x,h/2,-10,w,h,2,'#2b3e55');
+    box(x,h+.08,-10,w+.3,.16,2.3,'#53718a');
+  }
 }
 for (const x of [-24,24]) {
   box(x,1.1,0,.5,2.2,4.8,'#667b8a');
