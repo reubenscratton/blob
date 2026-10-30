@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {AABB2} from './AABB2.js';
 import {PlayerMotion} from './PlayerMotion.js';
 import {PlaygroundCharacter} from './PlaygroundCharacter.js';
 import {createLavaFloor} from './LavaFloor.js';
@@ -32,6 +33,7 @@ const geometricSides=new URLSearchParams(location.search).get('rock')!=='texture
 const comparison=document.querySelector('#compare-rocks');
 comparison.href=geometricSides?'?rock=texture':'?rock=geometry';
 comparison.textContent=geometricSides?'Compare textured rocks':'Try geometric rocks';
+const scenery=[];
 if(geometricSides) {
   // 8 × 6 cells, each 4 wide × 3 high, matching the reference screen's 4:3 cells.
   // Bottom row: columns 3,4,5; row above: columns 4,5 (zero-based).
@@ -42,6 +44,9 @@ if(geometricSides) {
     const rock=createRockSection({width,height:bodyHeight+1,depth:5,
       roundEnds:true,offsetX:x});
     rock.position.set(x,-6+bodyHeight,0);
+    const aabb=new AABB2(x-width/2,-6,x+width/2,-6+bodyHeight);
+    rock.userData.aabb=aabb;
+    scenery.push({object:rock,aabb,solid:true});
     scene.add(rock);
   }
 } else {
@@ -50,8 +55,7 @@ if(geometricSides) {
 }
 const motion = new PlayerMotion(), held = new Set(), bolts = new ElectricBolts(scene);
 if(geometricSides) {
-  motion.platforms=[{left:-4,right:0,top:-3,bottom:-6},
-    {left:0,right:8,top:0,bottom:-6}];
+  motion.colliders=scenery.filter(entity=>entity.solid).map(entity=>entity.aabb);
   motion.bounds=[-15,15];
   motion.startX=2;
   motion.reset();
@@ -77,7 +81,11 @@ new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href, gltf =
   gltf.scene.updateMatrixWorld(true);
   character = new PlaygroundCharacter(gltf.scene, scene);
   motion.jumpHeight = 2 * character.height;
-  motion.characterHeight = character.height;
+  motion.width = character.collisionWidth;
+  motion.height = character.height;
+  motion.syncBounds();
+  character.aabb=motion.aabb;
+  character.root.userData.aabb=motion.aabb;
   status.textContent = 'Ready · Facing right';
 }, undefined, error => {status.textContent = 'Could not load Blob: '+error.message;});
 function resize() {

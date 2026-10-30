@@ -9,6 +9,7 @@ export class PlaygroundCharacter {
   constructor(model, scene) {
     const size = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
     this.height = size.z;
+    this.collisionWidth=Math.max(size.x,size.y); // Stable through turns and gait.
     this.width = size.y; // Forward/back extent becomes horizontal when side-on.
     this.root = new THREE.Group();
     scene.add(this.root);

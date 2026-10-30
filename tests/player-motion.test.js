@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {AABB2} from '../src/AABB2.js';
 import {PlayerMotion} from '../src/PlayerMotion.js';
 
 test('movement is horizontal, stationary without input, and bounded', () => {
@@ -54,7 +55,7 @@ test('start-room ledge bounds and spawn survive reset', () => {
 
 test('stepped platforms allow a drop, block the riser, and permit a jump back up', () => {
   const motion=new PlayerMotion();
-  motion.platforms=[{left:-4,right:0,top:-3,bottom:-6},{left:0,right:8,top:0,bottom:-6}];
+  motion.colliders=[new AABB2(-4,-6,0,-3),new AABB2(0,-6,8,0)];
   motion.startX=2; motion.reset();
   for(let i=0;i<35;i++) motion.update(.01,-1);
   assert.ok(motion.x<0); assert.equal(motion.airborne,true);

@@ -1,6 +1,8 @@
+import {AABB2,moveAABB} from './AABB2.js';
+
 // Gameplay lives in X/Y; depth Z stays locked. The original character remains Z-up.
 export class PlayerMotion {
-  constructor() { this.jumpHeight = 5.4; this.jumpDuration = 1; this.reset(); }
+  constructor() { this.aabb=new AABB2(); this.width=1.1; this.height=2.7; this.jumpHeight = 5.4; this.jumpDuration = 1; this.reset(); }
   reset() {
     this.x = this.startX ?? 0;
     this.y = 0;
@@ -14,14 +16,15 @@ export class PlayerMotion {
     this.turnTo = this.angle;
     this.turnTime = .18;
     this.distance = 0;
+    this.syncBounds();
   }
   update(dt, input, jumpPressed = false) {
     if (jumpPressed && !this.airborne) {
       this.airborne = true;
       this.jumpTime = 0;
-      if(this.platforms) this.velocityY=4*this.jumpHeight/this.jumpDuration;
+      if(this.colliders) this.velocityY=4*this.jumpHeight/this.jumpDuration;
     }
-    if (this.airborne && !this.platforms) {
+    if (this.airborne && !this.colliders) {
       this.jumpTime = Math.min(this.jumpDuration, this.jumpTime + dt);
       const t = this.jumpTime / this.jumpDuration;
       // An exact arcade arc: the feet rise twice the character's standing height.
@@ -42,38 +45,30 @@ export class PlayerMotion {
     const previousX = this.x;
     // Pivot in place on the ground; air steering responds immediately.
     if (input && (this.airborne || this.turnTime >= .18)) this.x = Math.max(this.bounds?.[0] ?? -22, Math.min(this.bounds?.[1] ?? 22, this.x + input * 16 * dt));
-    if(this.platforms) this.updatePlatforms(dt,previousX);
+    if(this.colliders) this.updateCollisions(dt,previousX);
+    this.syncBounds();
     this.distance = Math.abs(this.x - previousX);
     return this.distance;
   }
-  updatePlatforms(dt,previousX) {
-    const previousY=this.y;
+  syncBounds() { this.aabb.setFromFeet(this.x,this.y,this.width,this.height); }
+  updateCollisions(dt,previousX) {
     const gravity=8*this.jumpHeight/(this.jumpDuration*this.jumpDuration);
-    if(this.airborne) {
-      this.y+=this.velocityY*dt-.5*gravity*dt*dt;
-      this.velocityY-=gravity*dt;
-    }
-    const radius=.55, height=this.characterHeight??2.7;
-    // Solid risers stop horizontal movement until the feet clear the ledge.
-    for(const platform of this.platforms) {
-      if(this.y>=platform.top-1e-6 || this.y+height<=platform.bottom) continue;
-      if(previousX+radius<=platform.left && this.x+radius>platform.left)
-        this.x=platform.left-radius;
-      if(previousX-radius>=platform.right && this.x-radius<platform.right)
-        this.x=platform.right+radius;
-    }
-    const beneath=this.platforms.filter(p=>this.x>=p.left && this.x<p.right)
-      .sort((a,b)=>b.top-a.top);
-    const landing=beneath.find(p=>this.velocityY<=0 && previousY>=p.top-1e-6 && this.y<=p.top);
-    if(landing) {
-      this.y=landing.top; this.velocityY=0; this.airborne=false;
-    } else if(!beneath.some(p=>Math.abs(this.y-p.top)<1e-6) || this.velocityY>0) {
-      this.airborne=true;
-    }
-    const ground=beneath.find(p=>p.top<=this.y+1e-6);
+    const dx=this.x-previousX;
+    this.x=previousX;
+    this.syncBounds();
+    const dy=this.airborne?this.velocityY*dt-.5*gravity*dt*dt:0;
+    if(this.airborne) this.velocityY-=gravity*dt;
+    const result=moveAABB(this.aabb,dx,dy,this.colliders);
+    this.x+=result.x; this.y+=result.y;
+    if(result.contacts.some(hit=>hit.ny!==0)) this.velocityY=0;
+    const beneath=this.colliders.filter(p=>this.aabb.right>p.left+1e-6
+      && this.aabb.left<p.right-1e-6 && p.top<=this.y+1e-6);
+    const ground=beneath.reduce((best,p)=>!best||p.top>best.top?p:best,null);
+    const supported=ground && Math.abs(this.y-ground.top)<1e-6;
+    this.airborne=!(supported && this.velocityY<=0);
     this.airHeight=ground?Math.max(0,this.y-ground.top):1;
     // No neighbouring rooms yet: falling out of this room returns to the start.
     if(this.y < -15) this.reset();
+    this.syncBounds();
   }
-
 }
