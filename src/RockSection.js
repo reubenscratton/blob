@@ -29,12 +29,12 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
       let cleft=0;
       for(let branch=-1;branch<=Math.ceil(width/1.1);branch++) {
         const key=branch+17;
-        const trunk=-width/2+branch*1.1+.32*(noise(y*.72,key)-.5)
-          +.16*(noise(y*1.8,key+31)-.5)+.24*(hash(key+8)-.5);
+        const trunk=-width/2+branch*1.1+1.05*(noise(y*.72,key)-.5)
+          +.30*(noise(y*1.8,key+31)-.5)+.24*(hash(key+8)-.5);
         // Nonperiodic, unequal branches form varied islands and shared trunks.
         const merge=THREE.MathUtils.smoothstep(noise(y*(.38+.25*hash(key)),key+61),.28,.68);
         for(const side of [-1,1]) {
-          const spread=.10+.55*noise(y*(.6+.3*hash(key+side)),key+side*7);
+          const spread=.18+.80*noise(y*(.6+.3*hash(key+side)),key+side*7);
           const path=trunk+side*merge*spread;
           const grooveWidth=.075+.065*noise(y*1.1,key+side*13);
           const distance=(x-path)/grooveWidth;
