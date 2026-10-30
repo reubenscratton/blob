@@ -25,8 +25,15 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
   const colors=[];
   for(let i=0;i<p.count;i++) {
     const x=p.getX(i), y=p.getY(i)-bodyHeight/2, z=p.getZ(i);
-    // Keep the full block silhouette while the top-surface experiment is tuned.
-    let px=x, py=y, pz=z;
+    // A small true curved shoulder softens the rim without adding a flat bevel.
+    const radius=.16;
+    const cx=roundEnds?THREE.MathUtils.clamp(x,-width/2+radius,width/2-radius):x;
+    const cz=THREE.MathUtils.clamp(z,-depth/2+radius,depth/2-radius);
+    const cy=Math.min(y,-radius);
+    const dx=x-cx, dy=y-cy, dz=z-cz;
+    const distance=Math.hypot(dx,dy,dz);
+    const scale=distance>radius?radius/distance:1;
+    let px=cx+dx*scale, py=cy+dy*scale, pz=cz+dz*scale;
     const sideWeight=THREE.MathUtils.smoothstep(Math.abs(x),width/2-.4,width/2);
     const sideTravel=Math.sin(Math.PI*(z/depth+.5));
     const sideFeature=sampleHeight(sampleOffset+(x+width/2)/width*sampleWidth
@@ -48,7 +55,7 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
     p.setXYZ(i,px,py,pz);
     const depthTint=.12+.88*THREE.MathUtils.smoothstep(feature,.05,.82);
     // Shallower cap grooves also need less darkening than the deep side furrows.
-    const tint=THREE.MathUtils.lerp(depthTint,.72+.28*depthTint,topBlend);
+    const tint=THREE.MathUtils.lerp(depthTint,.52+.48*depthTint,topBlend);
     colors.push(tint,tint,tint);
   }
   geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
