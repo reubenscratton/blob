@@ -24,13 +24,17 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
       THREE.MathUtils.lerp(data[iy*size+ix],data[iy*size+ix+1],fx),
       THREE.MathUtils.lerp(data[(iy+1)*size+ix],data[(iy+1)*size+ix+1],fx),fy)/255;
   };
+  // Keep each face within one source crop: mirrored repeats create a visible
+  // vertical reflection axis when a wide block straddles the sample boundary.
+  const sampleWidth=Math.min(.94,width/6);
+  const sampleOffset=(1-sampleWidth)*(.5+.4*Math.sin(width*2.13+bodyHeight));
   for(const sign of [-1,1]) {
     const face=new THREE.PlaneGeometry(width,bodyHeight,Math.ceil(width*40),Math.ceil(bodyHeight*40));
     const p=face.attributes.position;
     const colors=[];
     for(let i=0;i<p.count;i++) {
       const x=p.getX(i), y=p.getY(i)-bodyHeight/2;
-      const height=sampleHeight((x+width/2)/6+width*.073,-y/6+bodyHeight*.037);
+      const height=sampleHeight(sampleOffset+(x+width/2)/width*sampleWidth,-y/6+bodyHeight*.037);
       const edgeFade=THREE.MathUtils.smoothstep(width/2-Math.abs(x),0,.20);
       const relief=edgeFade*(.68*height);
       p.setXYZ(i,x,y,sign*(depth/2+.015+relief));
