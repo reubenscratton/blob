@@ -9,9 +9,9 @@ export async function createLavaFloor(scene, renderer, {geometricSides = true} =
   if(geometricSides) {
     const root=new THREE.Group();
     root.name='Continuous bark rock platform';
-    // Shared flat ends meet exactly; only the exposed front/back shoulders round over.
+    // Shared flat ends meet exactly; the cap relief continues across joins.
     for(let i=0;i<10;i++) {
-      const block=createRockSection({width:5,height:3.4,depth:5,roundEnds:false,offsetX:-22.5+i*5});
+      const block=createRockSection({width:5,height:6.8,depth:5,roundEnds:false,offsetX:-22.5+i*5});
       block.position.x=-22.5+i*5;
       root.add(block);
     }
