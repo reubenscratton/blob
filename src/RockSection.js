@@ -18,28 +18,48 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
     const cell=Math.floor(y), f=y-cell, blend=f*f*(3-2*f);
     return THREE.MathUtils.lerp(hash(cell+key*91.3),hash(cell+1+key*91.3),blend);
   };
+  // Limit both groove banks, including width changes, to twenty degrees.
+  const steps=Math.ceil(bodyHeight/.05), dy=bodyHeight/steps;
+  const maxSlope=Math.tan(20*Math.PI/180)-.03;
+  const channels=[];
+  let steepest=0;
+  for(let branch=-1;branch<=Math.ceil(width/1.1);branch++) {
+    const key=branch+17, anchor=-width/2+branch*1.1;
+    for(const side of [-1,1]) {
+      const samples=[];
+      for(let row=0;row<=steps;row++) {
+        const y=-bodyHeight+row*dy;
+        const trunk=.30*(noise(y*.72,key)-.5)+.12*(noise(y*1.8,key+31)-.5);
+        const merge=THREE.MathUtils.smoothstep(noise(y*(.38+.25*hash(key)),key+61),.28,.68);
+        const spread=.15+.42*noise(y*(.6+.3*hash(key+side)),key+side*7);
+        let x=anchor+THREE.MathUtils.clamp(trunk+side*merge*spread,-.55,.55);
+        let radius=.075+.065*noise(y*1.1,key+side*13);
+        if(row>0) {
+          const previous=samples[row-1];
+          x=THREE.MathUtils.clamp(x,previous.x-maxSlope*dy,previous.x+maxSlope*dy);
+          radius=THREE.MathUtils.clamp(radius,previous.radius-.03*dy,previous.radius+.03*dy);
+          steepest=Math.max(steepest,(Math.abs(x-previous.x)+Math.abs(radius-previous.radius))/dy);
+        }
+        samples.push({x,radius});
+      }
+      channels.push(samples);
+    }
+  }
+  root.userData.maximumChannelAngle=Math.atan(steepest)*180/Math.PI;
   for(const sign of [-1,1]) {
     const face=new THREE.PlaneGeometry(width,bodyHeight,Math.ceil(width*28),Math.ceil(bodyHeight*18));
     const p=face.attributes.position;
     const colors=[];
     for(let i=0;i<p.count;i++) {
       const x=p.getX(i), y=p.getY(i)-bodyHeight/2;
-      // Paired clefts meet along shared trunks, then split and cross again.
-      // Combining their depth fields carves real continuous junctions.
       let cleft=0;
-      for(let branch=-1;branch<=Math.ceil(width/1.1);branch++) {
-        const key=branch+17;
-        const trunk=-width/2+branch*1.1+1.05*(noise(y*.72,key)-.5)
-          +.30*(noise(y*1.8,key+31)-.5)+.24*(hash(key+8)-.5);
-        // Nonperiodic, unequal branches form varied islands and shared trunks.
-        const merge=THREE.MathUtils.smoothstep(noise(y*(.38+.25*hash(key)),key+61),.28,.68);
-        for(const side of [-1,1]) {
-          const spread=.18+.80*noise(y*(.6+.3*hash(key+side)),key+side*7);
-          const path=trunk+side*merge*spread;
-          const grooveWidth=.075+.065*noise(y*1.1,key+side*13);
-          const distance=(x-path)/grooveWidth;
-          cleft=Math.max(cleft,Math.exp(-distance*distance));
-        }
+      const sample=THREE.MathUtils.clamp((y+bodyHeight)/dy,0,steps);
+      const row=Math.min(steps-1,Math.floor(sample)), blend=sample-row;
+      for(const channel of channels) {
+        const path=THREE.MathUtils.lerp(channel[row].x,channel[row+1].x,blend);
+        const radius=THREE.MathUtils.lerp(channel[row].radius,channel[row+1].radius,blend);
+        const distance=(x-path)/radius;
+        cleft=Math.max(cleft,Math.exp(-distance*distance));
       }
       const edgeFade=THREE.MathUtils.smoothstep(width/2-Math.abs(x),0,.28);
       const relief=edgeFade*(.85*(1-cleft)+.025*Math.sin(x*23+y*13));
