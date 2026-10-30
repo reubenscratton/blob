@@ -1,20 +1,13 @@
 import * as THREE from 'three';
+import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 import {createRockColumns} from './RockColumns.js';
 import barkHeight from './BarkHeightData.js';
 
-// Continuous solid backing with carved relief, rather than separate pillars.
-export function createRockSection({width=6,height=6,depth=3}={}) {
-  const root=new THREE.Group();
-  root.name='Solid grooved rock section';
+// One closed shell wraps image-guided relief around all four upright faces.
+export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offsetX=0}={}) {
+  const root=new THREE.Group(); root.name='Solid grooved rock section';
   const bodyHeight=Math.max(.5,height-1);
   const material=new THREE.MeshStandardMaterial({color:0xb50907,roughness:.86,vertexColors:true});
-  const core=new THREE.Mesh(new THREE.BoxGeometry(width,bodyHeight,depth),material);
-  const coreColors=new Float32Array(core.geometry.attributes.position.count*3).fill(1);
-  core.geometry.setAttribute('color',new THREE.BufferAttribute(coreColors,3));
-  core.position.y=-bodyHeight/2;
-  core.castShadow=true; core.receiveShadow=true;
-  root.add(core);
-  // Image-guided feature relief, not a luminance-to-depth conversion.
   const mirror=v=>{v=((v%2)+2)%2;return v<=1?v:2-v;};
   const sampleHeight=(u,v)=>{
     const size=barkHeight.size, x=mirror(u)*(size-1), y=mirror(v)*(size-1);
@@ -24,55 +17,52 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
       THREE.MathUtils.lerp(data[iy*size+ix],data[iy*size+ix+1],fx),
       THREE.MathUtils.lerp(data[(iy+1)*size+ix],data[(iy+1)*size+ix+1],fx),fy)/255;
   };
-  // Keep each face within one source crop: mirrored repeats create a visible
-  // vertical reflection axis when a wide block straddles the sample boundary.
   const sampleWidth=Math.min(.94,width/6);
   const sampleOffset=(1-sampleWidth)*(.5+.4*Math.sin(width*2.13+bodyHeight));
-  for(const sign of [-1,1]) {
-    const face=new THREE.PlaneGeometry(width,bodyHeight,Math.ceil(width*40),Math.ceil(bodyHeight*40));
-    const p=face.attributes.position;
-    const colors=[];
-    for(let i=0;i<p.count;i++) {
-      const x=p.getX(i), y=p.getY(i)-bodyHeight/2;
-      const height=sampleHeight(sampleOffset+(x+width/2)/width*sampleWidth,-y/6+bodyHeight*.037);
-      const edgeFade=THREE.MathUtils.smoothstep(width/2-Math.abs(x),0,.20);
-      const relief=edgeFade*(.68*height);
-      p.setXYZ(i,x,y,sign*(depth/2+.015+relief));
-      // Depth tint is independent of the photograph's colour and lighting.
-      const tint=.12+.88*THREE.MathUtils.smoothstep(height,.05,.82);
-      colors.push(tint,tint,tint);
+  const radius=Math.min(.48,bodyHeight*.3);
+  const geometry=new THREE.BoxGeometry(width,bodyHeight,depth,
+    Math.ceil(width*40),Math.ceil(bodyHeight*40),Math.ceil(depth*40));
+  const p=geometry.attributes.position, originalNormals=geometry.attributes.normal;
+  const colors=[], normal=new THREE.Vector3();
+  for(let i=0;i<p.count;i++) {
+    const x=p.getX(i), y=p.getY(i)-bodyHeight/2, z=p.getZ(i);
+    // Rounded vertical corners and a quarter-round shoulder at the top.
+    const cx=roundEnds?THREE.MathUtils.clamp(x,-width/2+radius,width/2-radius):x;
+    const cz=THREE.MathUtils.clamp(z,-depth/2+radius,depth/2-radius);
+    const cy=THREE.MathUtils.clamp(y,-bodyHeight+radius,-radius);
+    normal.set(x-cx,y-cy,z-cz);
+    if(normal.lengthSq()>1e-10) normal.normalize();
+    else normal.fromBufferAttribute(originalNormals,i);
+    let px=cx+normal.x*radius, py=cy+normal.y*radius, pz=cz+normal.z*radius;
+    // Interior cap points stay on their planar surface.
+    if(Math.abs(x)<=width/2-radius&&Math.abs(z)<=depth/2-radius) {
+      px=x; pz=z; py=y;
     }
-    if(sign<0) {
-      const index=face.index;
-      for(let i=0;i<index.count;i+=3) {
-        const a=index.getX(i); index.setX(i,index.getX(i+2)); index.setX(i+2,a);
-      }
-    }
-    face.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-    // Seal the relief to the backing at the upper and lower boundaries.
-    const columns=face.parameters.widthSegments+1;
-    const capPositions=[];
-    for(const row of [0,face.parameters.heightSegments]) {
-      for(let j=0;j<columns-1;j++) {
-        const a=row*columns+j, b=a+1;
-        const va=[p.getX(a),p.getY(a),p.getZ(a)];
-        const vb=[p.getX(b),p.getY(b),p.getZ(b)];
-        const ca=[va[0],va[1],sign*depth/2], cb=[vb[0],vb[1],sign*depth/2];
-        capPositions.push(...va,...vb,...ca,...vb,...cb,...ca);
-      }
-    }
-    const caps=new THREE.BufferGeometry();
-    caps.setAttribute('position',new THREE.Float32BufferAttribute(capPositions,3));
-    caps.computeVertexNormals();
-    const capMaterial=material.clone(); capMaterial.vertexColors=false; capMaterial.side=THREE.DoubleSide;
-    root.add(new THREE.Mesh(caps,capMaterial));
-    face.computeVertexNormals();
-    const mesh=new THREE.Mesh(face,material);
-    mesh.castShadow=true; mesh.receiveShadow=true;
-    root.add(mesh);
+    const sideWeight=THREE.MathUtils.smoothstep(Math.abs(x),width/2-.4,width/2);
+    const sideTravel=Math.sin(Math.PI*(z/depth+.5));
+    const feature=sampleHeight(sampleOffset+(x+width/2)/width*sampleWidth
+      +sideWeight*sideTravel*.40,-y/6+bodyHeight*.037);
+    const reliefFade=THREE.MathUtils.smoothstep(-y,radius,radius+.5)
+      *THREE.MathUtils.smoothstep(y+bodyHeight,0,.08);
+    const relief=.68*feature*reliefFade;
+    px+=normal.x*relief; pz+=normal.z*relief;
+    // Low-amplitude, broad bumps keep the cap mostly flat.
+    const surfaceX=px+offsetX;
+    const bump=.024*Math.sin(surfaceX*2.7+pz*.8)*Math.cos(pz*3.1)
+      +.012*Math.sin(surfaceX*7.1-pz*4.3);
+    py+=Math.max(0,normal.y)*bump;
+    p.setXYZ(i,px,py,pz);
+    const depthTint=.12+.88*THREE.MathUtils.smoothstep(feature,.05,.82);
+    const tint=THREE.MathUtils.lerp(1,depthTint,reliefFade);
+    colors.push(tint,tint,tint);
   }
+  geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+  // Weld face boundaries before deriving normals so rounded corners have no seam.
+  geometry.deleteAttribute('normal'); geometry.deleteAttribute('uv');
+  const shell=mergeVertices(geometry); geometry.dispose(); shell.computeVertexNormals();
+  const mesh=new THREE.Mesh(shell,material);
+  mesh.castShadow=true; mesh.receiveShadow=true; root.add(mesh);
   const fringe=createRockColumns({span:width,halfDepth:depth/2,paintedChannels:false});
-  fringe.position.y=-bodyHeight;
-  root.add(fringe);
+  fringe.position.y=-bodyHeight; root.add(fringe);
   return root;
 }

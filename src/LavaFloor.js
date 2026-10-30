@@ -1,10 +1,23 @@
 import * as THREE from 'three';
 import {createLavaMaterial} from './LavaMaterial.js';
 import {createRockColumns} from './RockColumns.js';
+import {createRockSection} from './RockSection.js';
 
 // Flat gameplay surface, with relief supplied by the material and exposed skirt.
 // The decorative lower edge never changes the player's collision plane (Y=0).
 export async function createLavaFloor(scene, renderer, {geometricSides = true} = {}) {
+  if(geometricSides) {
+    const root=new THREE.Group();
+    root.name='Continuous bark rock platform';
+    // Shared flat ends meet exactly; only the exposed front/back shoulders round over.
+    for(let i=0;i<10;i++) {
+      const block=createRockSection({width:5,height:3.4,depth:5,roundEnds:false,offsetX:-22.5+i*5});
+      block.position.x=-22.5+i*5;
+      root.add(block);
+    }
+    scene.add(root);
+    return root;
+  }
   const loader=new THREE.TextureLoader();
   const textures=await Promise.all(['cooled-lava','cooled-lava-a','cooled-lava-b','cooled-lava-c']
     .map(name=>loader.loadAsync(new URL(`../assets/textures/${name}.png`,import.meta.url).href)));
