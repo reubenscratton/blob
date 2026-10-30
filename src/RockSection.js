@@ -22,12 +22,12 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
       // Paired clefts meet along shared trunks, then split and cross again.
       // Combining their depth fields carves real continuous junctions.
       let cleft=0;
-      for(let branch=-1;branch<=Math.ceil(width/1.65);branch++) {
+      for(let branch=-1;branch<=Math.ceil(width/1.1);branch++) {
         const phase=branch*2.37;
-        const trunk=-width/2+branch*1.65+.23*Math.sin(y*.95+phase)
+        const trunk=-width/2+branch*1.1+.23*Math.sin(y*.95+phase)
           +.10*Math.sin(y*2.1+phase*.7);
         const wave=Math.sin(y*(.68+.12*Math.sin(phase))+phase);
-        const split=.44*Math.sign(wave)*THREE.MathUtils.smoothstep(Math.abs(wave),.24,.9);
+        const split=.30*Math.sign(wave)*THREE.MathUtils.smoothstep(Math.abs(wave),.24,.9);
         for(const side of [-1,1]) {
           const path=trunk+side*split;
           const grooveWidth=.11+.025*Math.sin(y*1.7+phase+side);
