@@ -20,10 +20,10 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
   // Continuous world-space distortion changes the source crop and scale along
   // the wall instead of restarting the same bark patch on each block.
   const sampleBark=(horizontal,vertical)=>{
-    const u=horizontal/6+.17*Math.sin(horizontal*.37)
-      +.055*Math.sin(horizontal*.91+vertical*.73);
-    const v=vertical/6+.34*Math.sin(horizontal*.23+1.7)
-      +.13*Math.sin(horizontal*.67+vertical*.41);
+    const u=horizontal/6+.045*Math.sin(horizontal*.23)
+      +.012*Math.sin(horizontal*.53+vertical*.31);
+    const v=vertical/6+.16*Math.sin(horizontal*.11+1.7)
+      +.035*Math.sin(horizontal*.29+vertical*.19);
     return sampleHeight(u+.31,v+.53);
   };
   const geometry=new THREE.BoxGeometry(width,bodyHeight,depth,
