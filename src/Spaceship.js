@@ -27,9 +27,9 @@ export function createSpaceship() {
   // Rounded lower fuselage around an open, recessed cockpit.
   const hull=add(new THREE.SphereGeometry(1,32,20),silver,-.35,1.18,0);
   hull.scale.set(1.45,.58,.85);
-  const cockpit=add(new THREE.CylinderGeometry(.68,.52,.18,32),inside,-.88,1.66,0);
+  const cockpit=add(new THREE.CylinderGeometry(.92,.72,.18,32),inside,-.88,1.66,0);
   cockpit.scale.z=.85;
-  const lip=add(new THREE.TorusGeometry(.67,.055,8,40),pale,-.88,1.76,0);
+  const lip=add(new THREE.TorusGeometry(.92,.055,8,40),pale,-.88,1.76,0);
   lip.rotation.x=Math.PI/2; lip.scale.y=.85;
   const seat=add(new THREE.BoxGeometry(.42,.40,.35),dark,-.8,1.72,-.2);
   seat.rotation.z=-.12;
@@ -50,12 +50,13 @@ export function createSpaceship() {
   for(const [x,y] of [[.38,2.74],[1.28,2.35]]) {
     strut([.64,1.56,-.25],[x,y,-.18],.19,dark);
     pipe([[.48,1.64,.25],[.75,1.98,.34],[x,y-.24,.12],[x,y,-.15]],.10,pale);
-    const barrel=add(new THREE.CylinderGeometry(.39,.34,.65,24,true),silver,x,y,-.12);
+    const exhaust=new THREE.Group(); exhaust.position.set(x,y,-.12);
+    exhaust.rotation.y=Math.PI/2; ship.add(exhaust);
+    const barrel=add(new THREE.CylinderGeometry(.39,.34,.85,24,true),silver,0,0,0,exhaust);
     barrel.rotation.x=Math.PI/2;
-    const bore=add(new THREE.CircleGeometry(.30,24),inside,x,y,-.43);
-    add(new THREE.TorusGeometry(.34,.075,10,28),pale,x,y,.22);
-    // Inner sleeve stays dark all the way down to the back of the nozzle.
-    const sleeve=add(new THREE.CylinderGeometry(.29,.29,.58,24,true),dark,x,y,-.11);
+    add(new THREE.CircleGeometry(.30,24),inside,0,0,-.40,exhaust);
+    add(new THREE.TorusGeometry(.34,.075,10,28),pale,0,0,.44,exhaust);
+    const sleeve=add(new THREE.CylinderGeometry(.29,.29,.80,24,true),dark,0,0,0,exhaust);
     sleeve.rotation.x=Math.PI/2; sleeve.material=dark.clone(); sleeve.material.side=THREE.DoubleSide;
   }
   // Three splayed landing legs with broad pads.
@@ -70,14 +71,14 @@ export function createSpaceship() {
     pad.scale.set(.36,.095,.25);
   }
   // Open canopy: hinge on the nose, swung up and forward away from the cockpit.
-  const visor=new THREE.Group(); visor.position.set(-1.55,1.66,0); visor.rotation.z=1.12; ship.add(visor);
-  const dome=add(new THREE.SphereGeometry(.87,36,20,0,Math.PI*2,0,Math.PI/2),glass,.68,0,0,visor);
+  const visor=new THREE.Group(); visor.position.set(-1.82,1.66,0); visor.rotation.z=1.12; ship.add(visor);
+  const dome=add(new THREE.SphereGeometry(1.37,36,20,0,Math.PI*2,0,Math.PI/2),glass,.94,0,0,visor);
   dome.scale.set(1,.95,.85);
-  const rim=add(new THREE.TorusGeometry(.87,.045,8,48),pale,.68,0,0,visor);
+  const rim=add(new THREE.TorusGeometry(1.37,.055,8,48),pale,.94,0,0,visor);
   rim.rotation.x=Math.PI/2; rim.scale.y=.85;
-  for(const z of [-.68,.68]) {
-    add(new THREE.SphereGeometry(.12,12,8),silver,-1.55,1.66,z);
-    pipe([[-1.40,1.57,z],[-1.65,1.84,z],[-1.69,2.08,z]],.045,dark);
+  for(const z of [-.95,.95]) {
+    add(new THREE.SphereGeometry(.12,12,8),silver,-1.82,1.66,z);
+    pipe([[-1.52,1.57,z],[-1.88,1.84,z],[-1.96,2.08,z]],.045,dark);
   }
   return ship;
 }
