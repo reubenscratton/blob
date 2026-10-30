@@ -13,6 +13,11 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
   core.position.y=-bodyHeight/2;
   core.castShadow=true; core.receiveShadow=true;
   root.add(core);
+  const hash=n=>{const v=Math.sin(n*127.1+19.7)*43758.5453;return v-Math.floor(v);};
+  const noise=(y,key)=>{
+    const cell=Math.floor(y), f=y-cell, blend=f*f*(3-2*f);
+    return THREE.MathUtils.lerp(hash(cell+key*91.3),hash(cell+1+key*91.3),blend);
+  };
   for(const sign of [-1,1]) {
     const face=new THREE.PlaneGeometry(width,bodyHeight,Math.ceil(width*28),Math.ceil(bodyHeight*18));
     const p=face.attributes.position;
@@ -23,14 +28,15 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
       // Combining their depth fields carves real continuous junctions.
       let cleft=0;
       for(let branch=-1;branch<=Math.ceil(width/1.1);branch++) {
-        const phase=branch*2.37;
-        const trunk=-width/2+branch*1.1+.23*Math.sin(y*.95+phase)
-          +.10*Math.sin(y*2.1+phase*.7);
-        const wave=Math.sin(y*(.68+.12*Math.sin(phase))+phase);
-        const split=.30*Math.sign(wave)*THREE.MathUtils.smoothstep(Math.abs(wave),.24,.9);
+        const key=branch+17;
+        const trunk=-width/2+branch*1.1+.32*(noise(y*.72,key)-.5)
+          +.16*(noise(y*1.8,key+31)-.5)+.24*(hash(key+8)-.5);
+        // Nonperiodic, unequal branches form varied islands and shared trunks.
+        const merge=THREE.MathUtils.smoothstep(noise(y*(.38+.25*hash(key)),key+61),.28,.68);
         for(const side of [-1,1]) {
-          const path=trunk+side*split;
-          const grooveWidth=.11+.025*Math.sin(y*1.7+phase+side);
+          const spread=.10+.55*noise(y*(.6+.3*hash(key+side)),key+side*7);
+          const path=trunk+side*merge*spread;
+          const grooveWidth=.075+.065*noise(y*1.1,key+side*13);
           const distance=(x-path)/grooveWidth;
           cleft=Math.max(cleft,Math.exp(-distance*distance));
         }
