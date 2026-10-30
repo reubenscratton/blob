@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {createRockColumns} from './RockColumns.js';
+import barkHeight from './BarkHeightData.js';
 
 // Continuous solid backing with carved relief, rather than separate pillars.
 export function createRockSection({width=6,height=6,depth=3}={}) {
@@ -13,69 +14,28 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
   core.position.y=-bodyHeight/2;
   core.castShadow=true; core.receiveShadow=true;
   root.add(core);
-  const hash=n=>{const v=Math.sin(n*127.1+19.7)*43758.5453;return v-Math.floor(v);};
-  // A shared jittered grid: routes may join nodes in neighbouring columns.
-  const columns=Math.max(3,Math.round(width/1.0));
-  const rows=Math.max(3,Math.round(bodyHeight/1.4));
-  const nodes=[];
-  for(let row=0;row<=rows;row++) {
-    const line=[];
-    for(let col=0;col<columns;col++) {
-      const key=row*173+col*31+11;
-      line.push({
-        x:-width/2+(col+.12+.76*hash(key))*width/columns,
-        y:row===0?-bodyHeight:row===rows?0:
-          -bodyHeight+(row-.38+.76*hash(key+7))*bodyHeight/rows,
-      });
-    }
-    nodes.push(line);
-  }
-  const grooves=[];
-  const connect=(a,b,key)=>{
-    const radius=.065+.04*hash(key+19);
-    let previous=a;
-    for(let step=1;step<=10;step++) {
-      const t=step/10, curve=t*t*(3-2*t);
-      const point={x:THREE.MathUtils.lerp(a.x,b.x,curve),y:THREE.MathUtils.lerp(a.y,b.y,t)};
-      grooves.push({a:previous,b:point,radius});
-      previous=point;
-    }
+  // Image-guided feature relief, not a luminance-to-depth conversion.
+  const mirror=v=>{v=((v%2)+2)%2;return v<=1?v:2-v;};
+  const sampleHeight=(u,v)=>{
+    const size=barkHeight.size, x=mirror(u)*(size-1), y=mirror(v)*(size-1);
+    const ix=Math.min(size-2,Math.floor(x)), iy=Math.min(size-2,Math.floor(y));
+    const fx=x-ix, fy=y-iy, data=barkHeight.values;
+    return THREE.MathUtils.lerp(
+      THREE.MathUtils.lerp(data[iy*size+ix],data[iy*size+ix+1],fx),
+      THREE.MathUtils.lerp(data[(iy+1)*size+ix],data[(iy+1)*size+ix+1],fx),fy)/255;
   };
-  for(let row=0;row<rows;row++) {
-    const incoming=new Set(), links=new Set();
-    const link=(col,target)=>{
-      const id=col*columns+target;
-      if(links.has(id)) return;
-      links.add(id); incoming.add(target);
-      connect(nodes[row][col],nodes[row+1][target],row*271+col*23+target*71);
-    };
-    for(let col=0;col<columns;col++) {
-      const key=row*97+col*37+3;
-      const shift=hash(key)<.62?(hash(key+1)<.5?-1:1):0;
-      link(col,THREE.MathUtils.clamp(col+shift,0,columns-1));
-      if(hash(key+5)<.38) link(col,col);
-    }
-    // Every merge point participates, including those missed by random routes.
-    for(let col=0;col<columns;col++) if(!incoming.has(col)) link(col,col);
-  }
   for(const sign of [-1,1]) {
-    const face=new THREE.PlaneGeometry(width,bodyHeight,Math.ceil(width*28),Math.ceil(bodyHeight*18));
+    const face=new THREE.PlaneGeometry(width,bodyHeight,Math.ceil(width*40),Math.ceil(bodyHeight*40));
     const p=face.attributes.position;
     const colors=[];
     for(let i=0;i<p.count;i++) {
       const x=p.getX(i), y=p.getY(i)-bodyHeight/2;
-      let cleft=0;
-      for(const {a,b,radius} of grooves) {
-        const dx=b.x-a.x, dy=b.y-a.y;
-        const t=THREE.MathUtils.clamp(((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy),0,1);
-        const distance=Math.hypot(x-a.x-t*dx,y-a.y-t*dy)/radius;
-        cleft=Math.max(cleft,Math.exp(-distance*distance));
-      }
-      const edgeFade=THREE.MathUtils.smoothstep(width/2-Math.abs(x),0,.28);
-      const relief=edgeFade*(.85*(1-cleft)+.025*Math.sin(x*23+y*13));
+      const height=sampleHeight((x+width/2)/6+width*.073,-y/6+bodyHeight*.037);
+      const edgeFade=THREE.MathUtils.smoothstep(width/2-Math.abs(x),0,.20);
+      const relief=edgeFade*(.68*height);
       p.setXYZ(i,x,y,sign*(depth/2+.015+relief));
-      // Baked depth tint complements real shadows in the recessed clefts.
-      const tint=1-.94*Math.pow(cleft, .65)*edgeFade;
+      // Depth tint is independent of the photograph's colour and lighting.
+      const tint=.12+.88*THREE.MathUtils.smoothstep(height,.05,.82);
       colors.push(tint,tint,tint);
     }
     if(sign<0) {
