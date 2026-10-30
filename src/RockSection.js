@@ -30,7 +30,11 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
       for(let row=0;row<=steps;row++) {
         const y=-bodyHeight+row*dy;
         const trunk=.30*(noise(y*.72,key)-.5)+.12*(noise(y*1.8,key+31)-.5);
-        const merge=THREE.MathUtils.smoothstep(noise(y*(.38+.25*hash(key)),key+61),.28,.68);
+        // Stagger shared trunks through the full height, including the lower half.
+        const lower=-bodyHeight+bodyHeight*(.22+.12*hash(key+3));
+        const upper=-bodyHeight+bodyHeight*(.64+.16*hash(key+4));
+        const mergeWindow=center=>THREE.MathUtils.smoothstep(Math.abs(y-center),.40,.40+Math.min(1.3,bodyHeight*.24));
+        const merge=Math.min(mergeWindow(lower),mergeWindow(upper));
         const spread=.15+.42*noise(y*(.6+.3*hash(key+side)),key+side*7);
         let x=anchor+THREE.MathUtils.clamp(trunk+side*merge*spread,-.55,.55);
         let radius=.075+.065*noise(y*1.1,key+side*13);
