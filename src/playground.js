@@ -6,6 +6,7 @@ import {PlaygroundCharacter} from './PlaygroundCharacter.js';
 import {createLavaFloor} from './LavaFloor.js';
 import {ElectricBolts} from './ElectricBolts.js';
 import {createRockSection} from './RockSection.js';
+import {createSpaceship} from './Spaceship.js';
 
 const view = document.querySelector('#view'), status = document.querySelector('#status');
 const scene = new THREE.Scene();
@@ -120,6 +121,13 @@ new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href, gltf =
       box.set(box.left*roomScale,box.bottom*roomScale,
         box.right*roomScale,box.top*roomScale);
     }
+    const spaceship=createSpaceship();
+    spaceship.position.set(5.65*roomScale,0,0);
+    scene.add(spaceship);
+    const shipBounds=new AABB2(spaceship.position.x-1.9,0,spaceship.position.x+1.8,3.7);
+    spaceship.userData.aabb=shipBounds;
+    scenery.push({object:spaceship,aabb:shipBounds,solid:true});
+    motion.colliders.push(shipBounds);
     motion.bounds=[-15*roomScale,15*roomScale];
     motion.startX=2*roomScale;
     motion.reset();
