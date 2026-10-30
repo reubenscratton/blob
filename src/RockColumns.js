@@ -13,7 +13,8 @@ export function createRockColumns() {
     const rings=18, segments=24;
     const length=.9+Math.pow(random(),.7)*2.5;
     const width=(layer===0?.30:.19)+random()*(layer===0?.53:.42);
-    const depth=.27+random()*.22;
+    // Keep broad formations rounded in depth as well as in silhouette.
+    const depth=Math.max(.42,width*.95)+random()*.22;
     const z=sign*(layer===0?2.23:2.55);
     const phase=random()*Math.PI*2, lean=(random()-.5)*.35;
     const positions=[], colors=[], indices=[];
