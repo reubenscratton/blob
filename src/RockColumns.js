@@ -3,7 +3,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Reference-inspired hanging rock clusters: all contours, taper and overlap are
 // geometry. Vertex colors give each curved column a dark face and red side rims.
-export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5}={}) {
+export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5,paintedChannels=true}={}) {
   const root=new THREE.Group(); root.name='Experimental Starquake rock columns';
   const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.66,metalness:0});
   let seed=1986;
@@ -58,7 +58,7 @@ export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5}={}) {
           ? Math.pow(Math.min(1,Math.abs(c)/channelWidth),2.6)
           : 1;
         const striation=.88+.12*Math.sin(angle*9+t*12+phase);
-        const rim=(.018+.982*edge)*striation;
+        const rim=(paintedChannels?(.018+.982*edge):1)*striation;
         colors.push(red*rim,.006+rim*.009,.009+rim*.005);
       }
     }

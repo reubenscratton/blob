@@ -40,7 +40,7 @@ const comparison=document.querySelector('#compare-rocks');
 comparison.href=geometricSides?'?rock=texture':'?rock=geometry';
 comparison.textContent=geometricSides?'Compare textured rocks':'Try geometric rocks';
 createLavaFloor(scene,renderer,{geometricSides}).catch(error => console.error('Lava floor texture could not load:',error));
-for (let x=-20; x<=20; x+=5) {
+for (let x=-20; !geometricSides && x<=20; x+=5) {
   box(x,1,-5,.22,2,.3,'#3c536b');
 }
 for (const [x,h,w] of [[-20,6,5],[-12,3,4],[-4,7,5],[5,4,5],[14,8,6],[22,3,3]]) {
