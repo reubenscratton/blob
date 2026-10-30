@@ -43,10 +43,12 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
     // Broad irregular ridges plus fine undulation replace the flat red cap.
     // A narrow walking lane stays at collision height while relief rises around it.
     const lane=THREE.MathUtils.smoothstep(Math.abs(z),.15,.8);
-    const bump=.38*(topFeature-.5)+.035*Math.sin((x+offsetX)*4.7+z*3.3);
+    const bump=.12*(topFeature-.5)+.012*Math.sin((x+offsetX)*4.7+z*3.3);
     py+=topBlend*lane*bump;
     p.setXYZ(i,px,py,pz);
-    const tint=.12+.88*THREE.MathUtils.smoothstep(feature,.05,.82);
+    const depthTint=.12+.88*THREE.MathUtils.smoothstep(feature,.05,.82);
+    // Shallower cap grooves also need less darkening than the deep side furrows.
+    const tint=THREE.MathUtils.lerp(depthTint,.72+.28*depthTint,topBlend);
     colors.push(tint,tint,tint);
   }
   geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
