@@ -19,9 +19,22 @@ export function createRockSection({width=6,height=6,depth=3}={}) {
     const colors=[];
     for(let i=0;i<p.count;i++) {
       const x=p.getX(i), y=p.getY(i)-bodyHeight/2;
-      // Narrow recessed clefts wander vertically through broad raised ridges.
-      const phase=x*7.2+.7*Math.sin(y*1.1+x*.6)+.23*Math.sin(y*2.7+x*1.3);
-      const cleft=Math.pow(.5+.5*Math.cos(phase),5);
+      // Paired clefts meet along shared trunks, then split and cross again.
+      // Combining their depth fields carves real continuous junctions.
+      let cleft=0;
+      for(let branch=-1;branch<=Math.ceil(width/1.65);branch++) {
+        const phase=branch*2.37;
+        const trunk=-width/2+branch*1.65+.23*Math.sin(y*.95+phase)
+          +.10*Math.sin(y*2.1+phase*.7);
+        const wave=Math.sin(y*(.68+.12*Math.sin(phase))+phase);
+        const split=.44*Math.sign(wave)*THREE.MathUtils.smoothstep(Math.abs(wave),.24,.9);
+        for(const side of [-1,1]) {
+          const path=trunk+side*split;
+          const grooveWidth=.11+.025*Math.sin(y*1.7+phase+side);
+          const distance=(x-path)/grooveWidth;
+          cleft=Math.max(cleft,Math.exp(-distance*distance));
+        }
+      }
       const edgeFade=THREE.MathUtils.smoothstep(width/2-Math.abs(x),0,.28);
       const relief=edgeFade*(.85*(1-cleft)+.025*Math.sin(x*23+y*13));
       p.setXYZ(i,x,y,sign*(depth/2+.015+relief));
