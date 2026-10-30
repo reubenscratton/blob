@@ -45,7 +45,7 @@ for (let x=-20; !geometricSides && x<=20; x+=5) {
 }
 for (const [x,h,w] of [[-20,6,5],[-12,3,4],[-4,7,5],[5,4,5],[14,8,6],[22,3,3]]) {
   if(geometricSides) {
-    const rock=createRockSection({width:w,height:h,depth:3});
+    const rock=createRockSection({width:w,height:h,depth:3,offsetX:x});
     rock.position.set(x,h,-7);
     scene.add(rock);
   } else {

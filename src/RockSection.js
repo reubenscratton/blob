@@ -17,8 +17,15 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
       THREE.MathUtils.lerp(data[iy*size+ix],data[iy*size+ix+1],fx),
       THREE.MathUtils.lerp(data[(iy+1)*size+ix],data[(iy+1)*size+ix+1],fx),fy)/255;
   };
-  const sampleWidth=Math.min(.94,width/6);
-  const sampleOffset=(1-sampleWidth)*(.5+.4*Math.sin(width*2.13+bodyHeight));
+  // Continuous world-space distortion changes the source crop and scale along
+  // the wall instead of restarting the same bark patch on each block.
+  const sampleBark=(horizontal,vertical)=>{
+    const u=horizontal/6+.17*Math.sin(horizontal*.37)
+      +.055*Math.sin(horizontal*.91+vertical*.73);
+    const v=vertical/6+.34*Math.sin(horizontal*.23+1.7)
+      +.13*Math.sin(horizontal*.67+vertical*.41);
+    return sampleHeight(u+.31,v+.53);
+  };
   const geometry=new THREE.BoxGeometry(width,bodyHeight,depth,
     Math.ceil(width*40),Math.ceil(bodyHeight*40),Math.ceil(depth*40));
   const p=geometry.attributes.position;
@@ -36,11 +43,11 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
     let px=cx+dx*scale, py=cy+dy*scale, pz=cz+dz*scale;
     const sideWeight=THREE.MathUtils.smoothstep(Math.abs(x),width/2-.4,width/2);
     const sideTravel=Math.sin(Math.PI*(z/depth+.5));
-    const sideFeature=sampleHeight(sampleOffset+(x+width/2)/width*sampleWidth
-      +sideWeight*sideTravel*.40,-y/6+bodyHeight*.037);
+    const sideFeature=sampleBark(x+offsetX+sideWeight*sideTravel*2.4,
+      -y+bodyHeight*.037*6+(z<0?2.7:0));
     // Carry the same ridge/furrow relief over the cap, with world-space
     // sampling so adjoining floor blocks share identical boundary heights.
-    const topFeature=sampleHeight((x+offsetX)/6+.31,z/6+.53);
+    const topFeature=sampleBark(x+offsetX,z);
     const topBlend=THREE.MathUtils.smoothstep(y,-.85,0);
     const feature=THREE.MathUtils.lerp(sideFeature,topFeature,topBlend);
     const reliefFade=THREE.MathUtils.smoothstep(y+bodyHeight,0,.08);
@@ -64,7 +71,7 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
   const shell=mergeVertices(geometry); geometry.dispose(); shell.computeVertexNormals();
   const mesh=new THREE.Mesh(shell,material);
   mesh.castShadow=true; mesh.receiveShadow=true; root.add(mesh);
-  const fringe=createRockColumns({span:width,halfDepth:depth/2,paintedChannels:false});
+  const fringe=createRockColumns({span:width,halfDepth:depth/2,paintedChannels:false,seed:1986+Math.round((offsetX+30)*997)});
   fringe.position.y=-bodyHeight; root.add(fringe);
   return root;
 }

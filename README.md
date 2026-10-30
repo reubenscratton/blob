@@ -85,3 +85,5 @@ The tall scenery uses a simplified feature-mask/height-field approach inspired b
 Also consulted: [Synthesizing Bark, Lefebvre and Neyret (2002)](https://diglib.eg.org/items/5a93b66f-cd1b-4b36-af79-414174e04bf0), which instead propagates fractures through strips during growth. That simulation is not implemented here.
 
 The geometric playground floor uses a continuous row of bark blocks with shared-height joins and bumpy bark-relief tops. Floor blocks are 6.8 units tall; the top edges have a subtle curved rounding and the shallow cap channels use softer depth shading than the sides. The walking collision plane remains at Y=0.
+
+Bark sampling uses continuous world-space warping to vary source crops across blocks, with independently seeded hanging fringes. The shallow top relief remains continuous across floor joins.
