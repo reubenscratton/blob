@@ -9,13 +9,26 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
   const bodyHeight=Math.max(.5,height-1);
   const material=new THREE.MeshStandardMaterial({color:0xb50907,roughness:.86,vertexColors:true});
   const mirror=v=>{v=((v%2)+2)%2;return v<=1?v:2-v;};
-  const sampleHeight=(u,v)=>{
-    const size=barkHeight.size, x=mirror(u)*(size-1), y=mirror(v)*(size-1);
+  const sampleRaw=(u,v)=>{
+    const size=barkHeight.size, x=u*(size-1), y=mirror(v)*(size-1);
     const ix=Math.min(size-2,Math.floor(x)), iy=Math.min(size-2,Math.floor(y));
     const fx=x-ix, fy=y-iy, data=barkHeight.values;
     return THREE.MathUtils.lerp(
       THREE.MathUtils.lerp(data[iy*size+ix],data[iy*size+ix+1],fx),
       THREE.MathUtils.lerp(data[(iy+1)*size+ix],data[(iy+1)*size+ix+1],fx),fy)/255;
+  };
+  const sampleHeight=(u,v)=>{
+    // Wrap in one direction rather than reflecting the bark into paired ridges.
+    // Crossfade the narrow source boundary so the wrap has no hard seam.
+    const wrapped=((u%1)+1)%1;
+    const x=.12+wrapped*.88;
+    const blend=THREE.MathUtils.smoothstep(x,.88,1);
+    const strip=height=>THREE.MathUtils.lerp(sampleRaw(x,height),
+      sampleRaw(Math.max(0,x-.88),height),blend);
+    // Filter only along the grain: soften small crosswise ripples while
+    // preserving the width and depth of the long vertical furrows.
+    return (strip(v-.028)+2*strip(v-.014)+3*strip(v)
+      +2*strip(v+.014)+strip(v+.028))/9;
   };
   // Continuous world-space distortion changes the source crop and scale along
   // the wall instead of restarting the same bark patch on each block.
