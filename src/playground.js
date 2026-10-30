@@ -40,7 +40,7 @@ if(geometricSides) {
     const width=columns*4, bodyHeight=rows*3;
     const x=-16+column*4+width/2;
     const rock=createRockSection({width,height:bodyHeight+1,depth:5,
-      roundEnds:false,offsetX:x});
+      roundEnds:true,offsetX:x});
     rock.position.set(x,-6+bodyHeight,0);
     scene.add(rock);
   }
@@ -50,9 +50,9 @@ if(geometricSides) {
 }
 const motion = new PlayerMotion(), held = new Set(), bolts = new ElectricBolts(scene);
 if(geometricSides) {
-  // Keep this first layout study playable on its upper ledge until platform
-  // collision and the rest of the room are added.
-  motion.bounds=[.8,7.2];
+  motion.platforms=[{left:-4,right:0,top:-3,bottom:-6},
+    {left:0,right:8,top:0,bottom:-6}];
+  motion.bounds=[-15,15];
   motion.startX=2;
   motion.reset();
 }
@@ -77,6 +77,7 @@ new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href, gltf =
   gltf.scene.updateMatrixWorld(true);
   character = new PlaygroundCharacter(gltf.scene, scene);
   motion.jumpHeight = 2 * character.height;
+  motion.characterHeight = character.height;
   status.textContent = 'Ready · Facing right';
 }, undefined, error => {status.textContent = 'Could not load Blob: '+error.message;});
 function resize() {

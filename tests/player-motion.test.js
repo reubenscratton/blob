@@ -51,3 +51,21 @@ test('start-room ledge bounds and spawn survive reset', () => {
   assert.equal(motion.x,.8);
   motion.reset(); assert.equal(motion.x,2);
 });
+
+test('stepped platforms allow a drop, block the riser, and permit a jump back up', () => {
+  const motion=new PlayerMotion();
+  motion.platforms=[{left:-4,right:0,top:-3,bottom:-6},{left:0,right:8,top:0,bottom:-6}];
+  motion.startX=2; motion.reset();
+  for(let i=0;i<35;i++) motion.update(.01,-1);
+  assert.ok(motion.x<0); assert.equal(motion.airborne,true);
+  for(let i=0;i<100;i++) motion.update(.01,0);
+  assert.equal(motion.y,-3); assert.equal(motion.airborne,false);
+  for(let i=0;i<40;i++) motion.update(.01,1);
+  assert.equal(motion.x,-.55); assert.equal(motion.y,-3);
+  motion.update(.01,0,true);
+  for(let i=0;i<40;i++) motion.update(.01,0);
+  assert.ok(motion.y>0);
+  for(let i=0;i<15;i++) motion.update(.01,1);
+  for(let i=0;i<100;i++) motion.update(.01,0);
+  assert.ok(motion.x>0); assert.equal(motion.y,0); assert.equal(motion.airborne,false);
+});

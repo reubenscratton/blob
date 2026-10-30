@@ -46,7 +46,7 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
   for(let i=0;i<p.count;i++) {
     const x=p.getX(i), y=p.getY(i)-bodyHeight/2, z=p.getZ(i);
     // A small true curved shoulder softens the rim without adding a flat bevel.
-    const radius=.16;
+    const radius=.28;
     const cx=roundEnds?THREE.MathUtils.clamp(x,-width/2+radius,width/2-radius):x;
     const cz=THREE.MathUtils.clamp(z,-depth/2+radius,depth/2-radius);
     const cy=Math.min(y,-radius);

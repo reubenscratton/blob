@@ -32,7 +32,7 @@ export class PlaygroundCharacter {
     if (moving) this.cycles += motion.distance / 2.5;
     this.airWeight = THREE.MathUtils.damp(this.airWeight, motion.airborne ? 1 : 0, 24, dt);
     // Ease out before contact so the hanging toes never pass through the floor.
-    const hang = this.airWeight * THREE.MathUtils.smoothstep(motion.y, 0, .6);
+    const hang = this.airWeight * THREE.MathUtils.smoothstep(motion.airHeight ?? motion.y, 0, .6);
     const {shell, legs, antennas, cycles} = this;
     const weight = this.weight * (1 - hang);
     const L=2.5, stance=.62, lift=.22, hip=.10;
