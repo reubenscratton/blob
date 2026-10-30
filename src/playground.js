@@ -42,19 +42,41 @@ if(geometricSides) {
     new THREE.MeshBasicMaterial({color:0x05070e,fog:false,toneMapped:false}));
   backdrop.position.set(0,0,-4);
   sky.add(backdrop);
-  const starlight=new THREE.MeshBasicMaterial({color:0xb9c2d1,fog:false,toneMapped:false});
   let starSeed=1986;
   const random=()=>{starSeed=(Math.imul(starSeed,1664525)+1013904223)>>>0;return starSeed/4294967296;};
-  for(let i=0;i<52;i++) {
-    const x=-15.3+random()*30.6, y=.3+random()*8.1;
-    const size=.055+random()*.055;
-    const addRay=(w,h)=>{
-      const ray=new THREE.Mesh(new THREE.PlaneGeometry(w,h),starlight);
-      ray.position.set(x,y,-3.95); sky.add(ray);
-    };
-    if(i%5===0) {addRay(size*3,size);addRay(size,size*3);}
-    else addRay(size,size);
+  const positions=[],colors=[],sizes=[];
+  for(let i=0;i<160;i++) {
+    positions.push(-15.3+random()*30.6,.3+random()*8.1,-3.95);
+    const bright=Math.pow(random(),3), warmth=random();
+    const color=new THREE.Color(warmth<.25?0xb9d7ff:warmth>.8?0xffdfb7:0xf3f5ff);
+    color.multiplyScalar(.25+bright*1.7);
+    colors.push(color.r,color.g,color.b);
+    sizes.push(.08+bright*.38);
   }
+  const starGeometry=new THREE.BufferGeometry();
+  starGeometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  starGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+  starGeometry.setAttribute('starSize',new THREE.Float32BufferAttribute(sizes,1));
+  const starlight=new THREE.ShaderMaterial({
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    vertexColors:true,toneMapped:false,
+    vertexShader:`attribute float starSize; varying vec3 lightColor;
+      void main(){
+        lightColor=color;
+        vec4 eye= modelViewMatrix*vec4(position,1.0);
+        gl_Position=projectionMatrix*eye;
+        gl_PointSize=clamp(starSize*2600.0/-eye.z,2.0,24.0);
+      }`,
+    fragmentShader:`varying vec3 lightColor;
+      void main(){
+        vec2 p=gl_PointCoord-.5;
+        float r2=dot(p,p);
+        float core=exp(-r2*170.0);
+        float halo=.12*exp(-r2*22.0);
+        gl_FragColor=vec4(lightColor,core+halo);
+      }`,
+  });
+  sky.add(new THREE.Points(starGeometry,starlight));
   // Pure decoration: never register the sky or stars as solid scenery entities.
   scene.add(sky);
 }
