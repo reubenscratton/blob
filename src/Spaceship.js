@@ -25,27 +25,27 @@ export function createSpaceship() {
     return mesh;
   }
   // Rounded lower fuselage around an open, recessed cockpit.
-  const hull=add(new THREE.SphereGeometry(1,32,20),silver,-.35,1.18,0);
-  hull.scale.set(1.45,.58,.85);
-  const cockpit=add(new THREE.CylinderGeometry(.92,.72,.18,32),inside,-.88,1.66,0);
+  const hull=add(new THREE.SphereGeometry(1,32,20),silver,-.5,1.18,0);
+  hull.scale.set(2.05,.58,1.35);
+  const cockpit=add(new THREE.CylinderGeometry(1.37,1.15,.30,40),inside,-.88,1.65,0);
   cockpit.scale.z=.85;
-  const lip=add(new THREE.TorusGeometry(.92,.055,8,40),pale,-.88,1.76,0);
+  const lip=add(new THREE.TorusGeometry(1.37,.055,8,48),pale,-.88,1.80,0);
   lip.rotation.x=Math.PI/2; lip.scale.y=.85;
   const seat=add(new THREE.BoxGeometry(.42,.40,.35),dark,-.8,1.72,-.2);
   seat.rotation.z=-.12;
   // Prominent rectangular engine and its recessed front badge.
-  add(new THREE.BoxGeometry(1.42,.90,1.32),silver,.48,1.20,.06);
-  add(new THREE.BoxGeometry(1.19,.64,.045),dark,.48,1.22,.745);
-  add(new THREE.BoxGeometry(1.08,.55,.04),pale,.48,1.22,.78);
+  add(new THREE.BoxGeometry(1.42,.90,1.32),silver,.48,1.20,.71);
+  add(new THREE.BoxGeometry(1.19,.64,.045),dark,.48,1.22,1.395);
+  add(new THREE.BoxGeometry(1.08,.55,.04),pale,.48,1.22,1.43);
   const canvas=document.createElement('canvas'); canvas.width=256; canvas.height=128;
   const ctx=canvas.getContext('2d');
   ctx.fillStyle='#d7dcda';ctx.fillRect(0,0,256,128);
   ctx.fillStyle='#172024';ctx.font='bold 108px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText('14',128,67);
   const badge=new THREE.CanvasTexture(canvas); badge.colorSpace=THREE.SRGBColorSpace;
-  add(new THREE.PlaneGeometry(.99,.49),new THREE.MeshBasicMaterial({map:badge}),.48,1.22,.807);
+  add(new THREE.PlaneGeometry(.99,.49),new THREE.MeshBasicMaterial({map:badge}),.48,1.22,1.457);
   for(const x of [-.04,.99]) for(const y of [.96,1.48])
-    add(new THREE.SphereGeometry(.032,8,6),dark,x,y,.82);
+    add(new THREE.SphereGeometry(.032,8,6),dark,x,y,1.47);
   // The exhaust mouths are real deep bores, with broad silver rims.
   for(const [x,y] of [[.38,2.74],[1.28,2.35]]) {
     strut([.64,1.56,-.25],[x,y,-.18],.19,dark);
@@ -61,7 +61,7 @@ export function createSpaceship() {
   }
   // Three splayed landing legs with broad pads.
   for(const [a,b] of [
-    [[-1.12,.95,.45],[-1.65,.18,.72]],
+    [[-1.65,.95,.65],[-2.12,.18,.92]],
     [[.94,.88,.43],[1.50,.18,.70]],
     [[.10,.88,-.5],[.22,.18,-.95]],
   ]) {
@@ -71,14 +71,14 @@ export function createSpaceship() {
     pad.scale.set(.36,.095,.25);
   }
   // Open canopy: hinge on the nose, swung up and forward away from the cockpit.
-  const visor=new THREE.Group(); visor.position.set(-1.82,1.66,0); visor.rotation.z=1.12; ship.add(visor);
-  const dome=add(new THREE.SphereGeometry(1.37,36,20,0,Math.PI*2,0,Math.PI/2),glass,.94,0,0,visor);
+  const visor=new THREE.Group(); visor.position.set(-2.25,1.80,0); visor.rotation.z=1.12; ship.add(visor);
+  const dome=add(new THREE.SphereGeometry(1.37,36,20,0,Math.PI*2,0,Math.PI/2),glass,1.37,0,0,visor);
   dome.scale.set(1,.95,.85);
-  const rim=add(new THREE.TorusGeometry(1.37,.055,8,48),pale,.94,0,0,visor);
+  const rim=add(new THREE.TorusGeometry(1.37,.055,8,48),pale,1.37,0,0,visor);
   rim.rotation.x=Math.PI/2; rim.scale.y=.85;
   for(const z of [-.95,.95]) {
-    add(new THREE.SphereGeometry(.12,12,8),silver,-1.82,1.66,z);
-    pipe([[-1.52,1.57,z],[-1.88,1.84,z],[-1.96,2.08,z]],.045,dark);
+    add(new THREE.SphereGeometry(.12,12,8),silver,-2.25,1.80,z);
+    pipe([[-1.95,1.64,z],[-2.30,1.95,z],[-2.39,2.18,z]],.045,dark);
   }
   return ship;
 }

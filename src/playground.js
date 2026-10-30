@@ -122,9 +122,9 @@ new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href, gltf =
         box.right*roomScale,box.top*roomScale);
     }
     const spaceship=createSpaceship();
-    spaceship.position.set(5.65*roomScale,0,0);
+    spaceship.position.set(6.05*roomScale,0,0);
     scene.add(spaceship);
-    const shipBounds=new AABB2(spaceship.position.x-2.8,0,spaceship.position.x+1.9,4.1);
+    const shipBounds=new AABB2(spaceship.position.x-3.3,0,spaceship.position.x+1.9,4.5);
     spaceship.userData.aabb=shipBounds;
     scenery.push({object:spaceship,aabb:shipBounds,solid:true});
     motion.colliders.push(shipBounds);
