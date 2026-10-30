@@ -7,7 +7,7 @@ import barkHeight from './BarkHeightData.js';
 export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offsetX=0}={}) {
   const root=new THREE.Group(); root.name='Solid grooved rock section';
   const bodyHeight=Math.max(.5,height-1);
-  const material=new THREE.MeshStandardMaterial({color:0xb50907,roughness:.86,vertexColors:true});
+  const material=new THREE.MeshStandardMaterial({color:0x790bb5,roughness:.86,vertexColors:true});
   const mirror=v=>{v=((v%2)+2)%2;return v<=1?v:2-v;};
   const sampleRaw=(u,v)=>{
     const size=barkHeight.size, x=u*(size-1), y=mirror(v)*(size-1);
@@ -67,7 +67,7 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
     const relief=.68*feature*reliefFade;
     if(roundEnds) px+=Math.sign(x)*Math.pow(Math.abs(x)/(width/2),8)*relief;
     pz+=Math.sign(z)*Math.pow(Math.abs(z)/(depth/2),8)*relief;
-    // Broad irregular ridges plus fine undulation replace the flat red cap.
+    // Broad irregular ridges plus fine undulation replace the flat cap.
     // A narrow walking lane stays at collision height while relief rises around it.
     const lane=THREE.MathUtils.smoothstep(Math.abs(z),.15,.8);
     const bump=.12*(topFeature-.5)+.012*Math.sin((x+offsetX)*4.7+z*3.3);

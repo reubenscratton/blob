@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Reference-inspired hanging rock clusters: all contours, taper and overlap are
-// geometry. Vertex colors give each curved column a dark face and red side rims.
+// geometry. Vertex colors give each curved column a dark face and purple side rims.
 export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5,paintedChannels=true,seed=1986}={}) {
   const root=new THREE.Group(); root.name='Experimental Starquake rock columns';
   const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.66,metalness:0});
@@ -17,7 +17,7 @@ export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5,paintedCha
     const z=sign*(halfDepth+(layer===0?-.27:.05));
     const phase=random()*Math.PI*2, lean=(random()-.5)*.35;
     const positions=[], colors=[], indices=[];
-    const red=.65+random()*.28;
+    const brightness=.65+random()*.28;
     // Vary the dark face independently without disturbing seeded placement.
     const channelScale=.7+.5*(.5+.5*Math.sin(phase*5.71+length*2.13));
     // Derive tip variety from each existing shape, preserving cluster placement.
@@ -50,7 +50,7 @@ export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5,paintedCha
         const edgeScale=(c<0?left:right);
         positions.push(cx+c*width*taper*flute*edgeScale,cy, z+sign*s*depth*radius*flute);
         // Viewed from the side, the forward-facing middle stays near black;
-        // the curved flanks rise through deep crimson to bright red edges.
+        // the curved flanks rise through deep violet to bright purple edges.
         const channelVariation=bodyHeight>0?.85+.15*Math.sin(travel*2.1+phase):1;
         const channelWidth=channelScale*channelVariation*(1-smooth((tipT-.55)/.4));
         const edge=channelWidth>0
@@ -58,7 +58,7 @@ export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5,paintedCha
           : 1;
         const striation=.88+.12*Math.sin(angle*9+t*12+phase);
         const rim=(paintedChannels?(.018+.982*edge):1)*striation;
-        colors.push(red*rim,.006+rim*.009,.009+rim*.005);
+        colors.push(brightness*rim*.65,.006+rim*.009,brightness*rim);
       }
     }
     for(let row=0;row<rings;row++) for(let j=0;j<segments;j++) {
@@ -71,7 +71,7 @@ export function createRockColumns({span=50,bodyHeight=0,halfDepth=2.5,paintedCha
       const first=row*(segments+1), center=positions.length/3;
       let cx=0,cy=0,cz=0;
       for(let j=0;j<segments;j++){cx+=positions[(first+j)*3];cy+=positions[(first+j)*3+1];cz+=positions[(first+j)*3+2];}
-      positions.push(cx/segments,cy/segments,cz/segments); colors.push(.04,.006,.009);
+      positions.push(cx/segments,cy/segments,cz/segments); colors.push(.026,.006,.04);
       for(let j=0;j<segments;j++) {
         const a=first+j,b=first+j+1;
         if((row===0)===(sign>0)) indices.push(center,b,a); else indices.push(center,a,b);
