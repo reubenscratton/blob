@@ -34,6 +34,7 @@ const comparison=document.querySelector('#compare-rocks');
 comparison.href=geometricSides?'?rock=texture':'?rock=geometry';
 comparison.textContent=geometricSides?'Compare textured rocks':'Try geometric rocks';
 const scenery=[];
+let roomScale=1;
 if(geometricSides) {
   // 8 × 6 cells, each 4 wide × 3 high, matching the reference screen's 4:3 cells.
   // Bottom row: columns 3,4,5; row above: columns 4,5 (zero-based).
@@ -81,6 +82,23 @@ new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href, gltf =
   gltf.scene.updateMatrixWorld(true);
   character = new PlaygroundCharacter(gltf.scene, scene);
   motion.jumpHeight = 2 * character.height;
+  if(geometricSides) {
+    // The construction grid is 4×3; one Blob-sized square is 2×2.
+    // Scale the room from the actual approved model, never stretch Blob.
+    roomScale=character.height/2;
+    scene.fog.near=35*roomScale; scene.fog.far=80*roomScale;
+    camera.far=100*roomScale; camera.updateProjectionMatrix();
+    for(const entity of scenery) {
+      entity.object.scale.setScalar(roomScale);
+      entity.object.position.multiplyScalar(roomScale);
+      const box=entity.aabb;
+      box.set(box.left*roomScale,box.bottom*roomScale,
+        box.right*roomScale,box.top*roomScale);
+    }
+    motion.bounds=[-15*roomScale,15*roomScale];
+    motion.startX=2*roomScale;
+    motion.reset();
+  }
   motion.width = character.collisionWidth;
   motion.height = character.height;
   motion.syncBounds();
@@ -109,9 +127,9 @@ function animate() {
   }
   cameraX=geometricSides?0:THREE.MathUtils.damp(cameraX,motion.x,6,dt);
   // Fixed side-on view. A slight elevation reveals the floor's 3D depth.
-  const distance=geometricSides?Math.max(37,54/camera.aspect):Math.max(40,24/camera.aspect);
-  const targetY=geometricSides?3:1.3;
-  camera.position.set(cameraX,targetY+7.4,distance);
+  const distance=geometricSides?Math.max(37,54/camera.aspect)*roomScale:Math.max(40,24/camera.aspect);
+  const targetY=geometricSides?3*roomScale:1.3;
+  camera.position.set(cameraX,targetY+7.4*(geometricSides?roomScale:1),distance);
   camera.lookAt(cameraX,targetY,0);
   renderer.render(scene,camera);
 }
