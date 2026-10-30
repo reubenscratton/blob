@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
-import {createRockColumns} from './RockColumns.js';
 import barkHeight from './BarkHeightData.js';
 
 // One closed shell wraps image-guided relief around all four upright faces.
@@ -54,16 +53,24 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
     const distance=Math.hypot(dx,dy,dz);
     const scale=distance>radius?radius/distance:1;
     let px=cx+dx*scale, py=cy+dy*scale, pz=cz+dz*scale;
+    // Grow the hanging edge from the bark ridges themselves. The final band
+    // stretches into unequal lobes and narrows in depth, within this same shell.
+    const hanging=1-THREE.MathUtils.smoothstep(y+bodyHeight,0,Math.min(1,bodyHeight*.45));
+    const rootFeature=sampleBark(x+offsetX,bodyHeight+bodyHeight*.037*6+(z<0?2.7:0));
+    const lobe=Math.pow(THREE.MathUtils.smoothstep(rootFeature,.18,.83),1.5);
+    const tipLength=.18+lobe*(1.65+.55*Math.sin((x+offsetX)*1.73+.9));
+    py-=hanging*tipLength;
+    pz*=1-hanging*.52*lobe;
     const sideWeight=THREE.MathUtils.smoothstep(Math.abs(x),width/2-.4,width/2);
     const sideTravel=Math.sin(Math.PI*(z/depth+.5));
     const sideFeature=sampleBark(x+offsetX+sideWeight*sideTravel*2.4,
-      -y+bodyHeight*.037*6+(z<0?2.7:0));
+      -py+bodyHeight*.037*6+(z<0?2.7:0));
     // Carry the same ridge/furrow relief over the cap, with world-space
     // sampling so adjoining floor blocks share identical boundary heights.
     const topFeature=sampleBark(x+offsetX,z);
     const topBlend=THREE.MathUtils.smoothstep(y,-.85,0);
     const feature=THREE.MathUtils.lerp(sideFeature,topFeature,topBlend);
-    const reliefFade=THREE.MathUtils.smoothstep(y+bodyHeight,0,.08);
+    const reliefFade=1-hanging*.7;
     const relief=.68*feature*reliefFade;
     if(roundEnds) px+=Math.sign(x)*Math.pow(Math.abs(x)/(width/2),8)*relief;
     pz+=Math.sign(z)*Math.pow(Math.abs(z)/(depth/2),8)*relief;
@@ -84,7 +91,5 @@ export function createRockSection({width=6,height=6,depth=3,roundEnds=true,offse
   const shell=mergeVertices(geometry); geometry.dispose(); shell.computeVertexNormals();
   const mesh=new THREE.Mesh(shell,material);
   mesh.castShadow=true; mesh.receiveShadow=true; root.add(mesh);
-  const fringe=createRockColumns({span:width,halfDepth:depth/2,paintedChannels:false,seed:1986+Math.round((offsetX+30)*997)});
-  fringe.position.y=-bodyHeight; root.add(fringe);
   return root;
 }
