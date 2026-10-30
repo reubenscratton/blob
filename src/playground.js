@@ -27,37 +27,35 @@ Object.assign(key.shadow.camera, {left:-29,right:29,top:16,bottom:-16,far:65});
 scene.add(key);
 const fill = new THREE.DirectionalLight(0xffffff, 1);
 fill.position.set(4, 4, -4); scene.add(fill);
-const materials = new Map();
-function box(x,y,z,w,h,d,color) {
-  if (!materials.has(color)) materials.set(color, new THREE.MeshStandardMaterial({color, roughness:.8}));
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), materials.get(color));
-  mesh.position.set(x,y,z); mesh.castShadow=true; mesh.receiveShadow=true;
-  scene.add(mesh); return mesh;
-}
-// One continuous, flat test lane. Background forms are scenery, outside the play plane.
+// The geometric view now follows the original start-room grid.
 const geometricSides=new URLSearchParams(location.search).get('rock')!=='texture';
 const comparison=document.querySelector('#compare-rocks');
 comparison.href=geometricSides?'?rock=texture':'?rock=geometry';
 comparison.textContent=geometricSides?'Compare textured rocks':'Try geometric rocks';
-createLavaFloor(scene,renderer,{geometricSides}).catch(error => console.error('Lava floor texture could not load:',error));
-for (let x=-20; !geometricSides && x<=20; x+=5) {
-  box(x,1,-5,.22,2,.3,'#3c536b');
-}
-for (const [x,h,w] of [[-20,6,5],[-12,3,4],[-4,7,5],[5,4,5],[14,8,6],[22,3,3]]) {
-  if(geometricSides) {
-    const rock=createRockSection({width:w,height:h,depth:3,offsetX:x});
-    rock.position.set(x,h,-7);
+if(geometricSides) {
+  // 8 × 6 cells, each 4 wide × 3 high, matching the reference screen's 4:3 cells.
+  // Bottom row: columns 3,4,5; row above: columns 4,5 (zero-based).
+  // Merge touching cells vertically so no internal stalactite fringe is exposed.
+  for(const [column,columns,rows] of [[3,1,1],[4,2,2]]) {
+    const width=columns*4, bodyHeight=rows*3;
+    const x=-16+column*4+width/2;
+    const rock=createRockSection({width,height:bodyHeight+1,depth:5,
+      roundEnds:false,offsetX:x});
+    rock.position.set(x,-6+bodyHeight,0);
     scene.add(rock);
-  } else {
-    box(x,h/2,-10,w,h,2,'#2b3e55');
-    box(x,h+.08,-10,w+.3,.16,2.3,'#53718a');
   }
-}
-for (const x of [-24,24]) {
-  box(x,1.1,0,.5,2.2,4.8,'#667b8a');
-  box(x,2.24,0,.65,.08,5,'#f1c27b');
+} else {
+  createLavaFloor(scene,renderer,{geometricSides:false})
+    .catch(error=>console.error('Lava floor texture could not load:',error));
 }
 const motion = new PlayerMotion(), held = new Set(), bolts = new ElectricBolts(scene);
+if(geometricSides) {
+  // Keep this first layout study playable on its upper ledge until platform
+  // collision and the rest of the room are added.
+  motion.bounds=[.8,7.2];
+  motion.startX=2;
+  motion.reset();
+}
 let character, cameraX = 0, jumpPressed = false, firePressed = false;
 const accepted = new Set(['ArrowLeft','ArrowRight','KeyA','KeyD','Space','KeyF']);
 function clearInput() { held.clear(); jumpPressed = false; firePressed = false; }
@@ -100,11 +98,12 @@ function animate() {
     const label=`${action} · Facing ${motion.direction>0?'right':'left'}`;
     if(status.textContent!==label) status.textContent=label;
   }
-  cameraX=THREE.MathUtils.damp(cameraX,motion.x,6,dt);
+  cameraX=geometricSides?0:THREE.MathUtils.damp(cameraX,motion.x,6,dt);
   // Fixed side-on view. A slight elevation reveals the floor's 3D depth.
-  const distance=Math.max(40,24/camera.aspect);
-  camera.position.set(cameraX,8.7,distance);
-  camera.lookAt(cameraX,1.3,0);
+  const distance=geometricSides?Math.max(37,54/camera.aspect):Math.max(40,24/camera.aspect);
+  const targetY=geometricSides?3:1.3;
+  camera.position.set(cameraX,targetY+7.4,distance);
+  camera.lookAt(cameraX,targetY,0);
   renderer.render(scene,camera);
 }
 animate();

@@ -40,3 +40,14 @@ test('jump reaches its specified apex, keeps air control, and lands exactly', ()
   motion.update(.1,0,true); assert.equal(motion.airborne,true);
   motion.reset(); assert.equal(motion.y,0); assert.equal(motion.airborne,false);
 });
+
+test('start-room ledge bounds and spawn survive reset', () => {
+  const motion=new PlayerMotion();
+  motion.bounds=[.8,7.2]; motion.startX=2; motion.reset();
+  assert.equal(motion.x,2);
+  for(let i=0;i<20;i++) motion.update(.05,1);
+  assert.equal(motion.x,7.2);
+  for(let i=0;i<30;i++) motion.update(.05,-1);
+  assert.equal(motion.x,.8);
+  motion.reset(); assert.equal(motion.x,2);
+});

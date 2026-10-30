@@ -87,3 +87,5 @@ Also consulted: [Synthesizing Bark, Lefebvre and Neyret (2002)](https://diglib.e
 The geometric playground floor uses a continuous row of bark blocks with shared-height joins and bumpy bark-relief tops. Floor blocks are 6.8 units tall; the top edges have a subtle curved rounding and the shallow cap channels use softer depth shading than the sides. The walking collision plane remains at Y=0.
 
 Bark sampling uses continuous world-space warping to vary source crops across blocks, with independently seeded hanging fringes. The shallow top relief remains continuous across floor joins.
+
+The default playground now studies the original 8×6 start-room layout: purple bark occupies three bottom-row cells (columns 4–6, counting from 1) and the two cells above the right-hand pair. Cells are 4×3 world units. Blob starts on the upper ledge; movement is temporarily confined to that ledge pending platform collision and the remaining room elements. The camera frames the room instead of following Blob. `?rock=texture` retains the old flat comparison lane.

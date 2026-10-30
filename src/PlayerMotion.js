@@ -2,7 +2,7 @@
 export class PlayerMotion {
   constructor() { this.jumpHeight = 5.4; this.jumpDuration = 1; this.reset(); }
   reset() {
-    this.x = 0;
+    this.x = this.startX ?? 0;
     this.y = 0;
     this.airborne = false;
     this.jumpTime = 0;
@@ -38,7 +38,7 @@ export class PlayerMotion {
     this.angle = this.turnFrom + (this.turnTo - this.turnFrom) * t * t * (3 - 2 * t);
     const previousX = this.x;
     // Pivot in place on the ground; air steering responds immediately.
-    if (input && (this.airborne || this.turnTime >= .18)) this.x = Math.max(-22, Math.min(22, this.x + input * 16 * dt));
+    if (input && (this.airborne || this.turnTime >= .18)) this.x = Math.max(this.bounds?.[0] ?? -22, Math.min(this.bounds?.[1] ?? 22, this.x + input * 16 * dt));
     this.distance = Math.abs(this.x - previousX);
     return this.distance;
   }
