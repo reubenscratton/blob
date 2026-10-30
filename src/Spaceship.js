@@ -25,8 +25,8 @@ export function createSpaceship() {
     return mesh;
   }
   // Rounded lower fuselage around an open, recessed cockpit.
-  const hull=add(new THREE.SphereGeometry(1,32,20),silver,-.5,1.18,0);
-  hull.scale.set(2.05,.58,1.35);
+  const hull=add(new THREE.SphereGeometry(1,32,20),silver,-.5,1.00,0);
+  hull.scale.set(2.05,.76,1.35);
   const cockpit=add(new THREE.CylinderGeometry(1.37,1.15,.30,40),inside,-.88,1.65,0);
   cockpit.scale.z=.85;
   const lip=add(new THREE.TorusGeometry(1.37,.055,8,48),pale,-.88,1.80,0);
@@ -61,9 +61,9 @@ export function createSpaceship() {
   }
   // Three splayed landing legs with broad pads.
   for(const [a,b] of [
-    [[-1.65,.95,.65],[-2.12,.18,.92]],
-    [[.94,.88,.43],[1.50,.18,.70]],
-    [[.10,.88,-.5],[.22,.18,-.95]],
+    [[-1.65,.53,.65],[-2.12,.18,.92]],
+    [[.94,.52,.43],[1.50,.18,.70]],
+    [[.10,.40,-.5],[.22,.18,-.95]],
   ]) {
     strut(a,b,.095);
     add(new THREE.SphereGeometry(.14,12,8),dark,...a);
