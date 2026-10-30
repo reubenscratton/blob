@@ -34,6 +34,29 @@ const comparison=document.querySelector('#compare-rocks');
 comparison.href=geometricSides?'?rock=texture':'?rock=geometry';
 comparison.textContent=geometricSides?'Compare textured rocks':'Try geometric rocks';
 const scenery=[];
+const sky=new THREE.Group(); sky.name='Start-room sky scenery';
+sky.position.y=3;
+if(geometricSides) {
+  const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(32,18),
+    new THREE.MeshBasicMaterial({color:0x05070e,fog:false,toneMapped:false}));
+  backdrop.position.set(0,0,-4);
+  sky.add(backdrop);
+  const starlight=new THREE.MeshBasicMaterial({color:0xb9c2d1,fog:false,toneMapped:false});
+  let starSeed=1986;
+  const random=()=>{starSeed=(Math.imul(starSeed,1664525)+1013904223)>>>0;return starSeed/4294967296;};
+  for(let i=0;i<52;i++) {
+    const x=-15.3+random()*30.6, y=.3+random()*8.1;
+    const size=.055+random()*.055;
+    const addRay=(w,h)=>{
+      const ray=new THREE.Mesh(new THREE.PlaneGeometry(w,h),starlight);
+      ray.position.set(x,y,-3.95); sky.add(ray);
+    };
+    if(i%5===0) {addRay(size*3,size);addRay(size,size*3);}
+    else addRay(size,size);
+  }
+  // Pure decoration: never register the sky or stars as solid scenery entities.
+  scene.add(sky);
+}
 let roomScale=1;
 if(geometricSides) {
   // 8 × 6 cells, each 4 wide × 3 high, matching the reference screen's 4:3 cells.
@@ -86,6 +109,8 @@ new GLTFLoader().load(new URL('../assets/blob.glb',import.meta.url).href, gltf =
     // The construction grid is 4×3; one Blob-sized square is 2×2.
     // Scale the room from the actual approved model, never stretch Blob.
     roomScale=character.height/2;
+    sky.scale.setScalar(roomScale);
+    sky.position.y=3*roomScale;
     scene.fog.near=35*roomScale; scene.fog.far=80*roomScale;
     camera.far=100*roomScale; camera.updateProjectionMatrix();
     for(const entity of scenery) {
@@ -131,6 +156,7 @@ function animate() {
   const targetY=geometricSides?3*roomScale:1.3;
   camera.position.set(cameraX,targetY+7.4*(geometricSides?roomScale:1),distance);
   camera.lookAt(cameraX,targetY,0);
+  sky.quaternion.copy(camera.quaternion);
   renderer.render(scene,camera);
 }
 animate();
